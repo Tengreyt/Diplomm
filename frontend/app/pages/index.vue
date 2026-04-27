@@ -26,6 +26,7 @@ const stats = computed(() => {
   };
 });
 
+
 const fetchLesson = async () => {
   try {
     const response = await $fetch<{ text: string; level: string }>(
