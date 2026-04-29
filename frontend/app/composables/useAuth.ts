@@ -24,7 +24,7 @@ export const useAuth = () => {
     login: "",
     password: "",
     nickname: "",
-    emoji: "рџ”Ґ",
+    emoji: "🔥",
     avatarUrl: avatarPresets[0]
   });
 
@@ -34,8 +34,8 @@ export const useAuth = () => {
   });
 
   const clanPitch = computed(() => {
-    const emoji = registerForm.emoji || "рџ”Ґ";
-    return `РљР»Р°РЅ ${emoji} РѕР±СЉРµРґРёРЅСЏРµС‚ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РІС‹Р±СЂР°Р»Рё СЌС‚РѕС‚ СЌРјРѕРґР¶Рё РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё.`;
+    const emoji = registerForm.emoji || "🔥";
+    return `Клан ${emoji} объединяет всех пользователей, которые выбрали это эмоджи при регистрации.`;
   });
 
   const switchMode = (mode: AuthMode) => {
@@ -77,10 +77,10 @@ export const useAuth = () => {
 
       applySession(response);
       clearForms();
-      authMessage.value = "РџСЂРѕС„РёР»СЊ СЃРѕР·РґР°РЅ. Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ РІ С‚СЂРµРЅР°Р¶РµСЂ.";
+      authMessage.value = "Профиль создан. Добро пожаловать в тренажер.";
       await onSuccess?.();
     } catch (error: any) {
-      authMessage.value = error?.data?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РїСЂРѕС„РёР»СЊ.";
+      authMessage.value = error?.data?.message || "Не удалось создать профиль.";
     } finally {
       isPending.value = false;
     }
@@ -101,10 +101,10 @@ export const useAuth = () => {
 
       applySession(response);
       clearForms();
-      authMessage.value = "РЎ РІРѕР·РІСЂР°С‰РµРЅРёРµРј. РџСЂРѕС„РёР»СЊ Р·Р°РіСЂСѓР¶РµРЅ.";
+      authMessage.value = "С возвращением. Профиль загружен.";
       await onSuccess?.();
     } catch (error: any) {
-      authMessage.value = error?.data?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ РІРѕР№С‚Рё.";
+      authMessage.value = error?.data?.message || "Не удалось войти.";
     } finally {
       isPending.value = false;
     }

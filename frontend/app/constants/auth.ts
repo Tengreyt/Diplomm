@@ -7,5 +7,5 @@ export const avatarPresets = [
   "https://api.dicebear.com/9.x/thumbs/svg?seed=Signal"
 ];
 
-export const emojiSuggestions = ["рџ”Ґ", "рџ¦Љ", "рџЊ™", "вљЎ", "рџЋЇ", "рџђ‰", "рџ«§", "рџЊЉ"];
+export const emojiSuggestions = ["🔥", "🦊", "🌙", "⚡", "🎯", "🐉", "🫧", "🌊"];
 

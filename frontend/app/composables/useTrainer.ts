@@ -1,7 +1,7 @@
 ﻿import type { LessonResponse, TrainerStats } from "~/types/trainer";
 
-const waitingLessonText = "РџРѕСЃР»Рµ РІС…РѕРґР° Р·РґРµСЃСЊ РїРѕСЏРІРёС‚СЃСЏ С‚РµРєСЃС‚ С‚СЂРµРЅРёСЂРѕРІРєРё.";
-const offlineLessonText = "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ С‚РµРєСЃС‚ С‚СЂРµРЅРёСЂРѕРІРєРё. РџСЂРѕРІРµСЂСЊ backend РЅР° РїРѕСЂС‚Сѓ 4001.";
+const waitingLessonText = "После входа здесь появится текст тренировки.";
+const offlineLessonText = "Не удалось получить текст тренировки. Проверь backend на порту 4001.";
 
 export const useTrainer = () => {
   const config = useRuntimeConfig();

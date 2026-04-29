@@ -2,41 +2,41 @@
   <section :class="root()">
     <div :class="header()">
       <div>
-        <p :class="kicker()">Р РµР¶РёРј С‚СЂРµРЅРёСЂРѕРІРєРё</p>
-        <h2 :class="title()">Р›РёС‡РЅС‹Р№ С‚СЂРµРЅР°Р¶РµСЂ</h2>
+        <p :class="kicker()">Режим тренировки</p>
+        <h2 :class="title()">Личный тренажер</h2>
       </div>
       <span :class="badge()">{{ lessonLevel }}</span>
     </div>
 
     <div :class="statsGrid()">
       <div :class="statCard()">
-        <span :class="statLabel()">РЎРёРјРІРѕР»РѕРІ</span>
+        <span :class="statLabel()">Символов</span>
         <strong :class="statValue()">{{ stats.totalChars }}</strong>
       </div>
       <div :class="statCard()">
-        <span :class="statLabel()">Р’РµСЂРЅРѕ</span>
+        <span :class="statLabel()">Верно</span>
         <strong :class="statValue()">{{ stats.correctChars }}</strong>
       </div>
       <div :class="statCard()">
-        <span :class="statLabel()">РўРѕС‡РЅРѕСЃС‚СЊ</span>
+        <span :class="statLabel()">Точность</span>
         <strong :class="statValue()">{{ stats.accuracy }}%</strong>
       </div>
     </div>
 
     <div :class="sectionGrid()">
       <div :class="sectionBlock()">
-        <p :class="sectionLabel()">РўРµРєСЃС‚ РґР»СЏ РїСЂР°РєС‚РёРєРё</p>
+        <p :class="sectionLabel()">Текст для практики</p>
         <div :class="practiceCard()">{{ lessonText }}</div>
       </div>
 
       <div :class="sectionBlock()">
-        <label :class="sectionLabel()" for="typing-area">РўРІРѕСЏ РїРѕРїС‹С‚РєР°</label>
+        <label :class="sectionLabel()" for="typing-area">Твоя попытка</label>
         <textarea
           id="typing-area"
           :value="typedText"
           rows="10"
           :class="[textarea(), 'text-black resize-none']"
-          placeholder="РќР°С‡РЅРё РїРµС‡Р°С‚Р°С‚СЊ Р·РґРµСЃСЊ..."
+          placeholder="Начни печатать здесь..."
           @input="emit('update:typedText', ($event.target as HTMLTextAreaElement).value)"
         ></textarea>
       </div>
@@ -44,7 +44,7 @@
 
     <div :class="buttonRow()">
       <button type="button" :class="actionButton()" @click="emit('refreshLesson')">
-        РќРѕРІС‹Р№ С‚РµРєСЃС‚
+        Новый текст
       </button>
     </div>
   </section>
