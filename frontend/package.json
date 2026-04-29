@@ -8,6 +8,10 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
-    "nuxt": "^4.1.1"
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "nuxt": "^4.1.1",
+    "tailwind-merge": "^3.5.0",
+    "tailwind-variants": "^3.2.2"
   }
 }
+

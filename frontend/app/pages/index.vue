@@ -1,100 +1,79 @@
 <script setup lang="ts">
-const config = useRuntimeConfig();
+const {
+  authMode,
+  isPending,
+  authMessage,
+  currentUser,
+  registerForm,
+  loginForm,
+  clanPitch,
+  switchMode,
+  selectAvatar,
+  chooseEmoji,
+  registerUser,
+  loginUser,
+  restoreSession,
+  logout
+} = useAuth();
 
-const sampleText = ref("Загрузка тренировочного текста...");
-const typedText = ref("");
+const {
+  lessonText,
+  lessonLevel,
+  typedText,
+  stats,
+  fetchLesson,
+  resetTrainer
+} = useTrainer();
 
-const stats = computed(() => {
-  const expected = sampleText.value;
-  const actual = typedText.value;
-  let correctChars = 0;
-
-  for (let index = 0; index < actual.length; index += 1) {
-    if (actual[index] === expected[index]) {
-      correctChars += 1;
-    }
-  }
-
-  const accuracy = actual.length
-    ? Math.round((correctChars / actual.length) * 100)
-    : 100;
-
-  return {
-    correctChars,
-    accuracy,
-    totalChars: expected.length
-  };
+onMounted(async () => {
+  await restoreSession(fetchLesson);
 });
 
-
-const fetchLesson = async () => {
-  try {
-    const response = await $fetch<{ text: string; level: string }>(
-      `${config.public.apiBase}/lesson`
-    );
-    sampleText.value = response.text;
-    typedText.value = "";
-  } catch {
-    sampleText.value =
-      "Не удалось получить текст с сервера. Проверь, что backend запущен на порту 4001.";
-  }
+const handleRegister = async () => {
+  await registerUser(fetchLesson);
 };
 
-onMounted(fetchLesson);
+const handleLogin = async () => {
+  await loginUser(fetchLesson);
+};
+
+const handleLogout = () => {
+  logout();
+  resetTrainer();
+};
 </script>
 
 <template>
-  <main class="page">
-    <section class="hero">
-      <div class="hero__copy">
-        <p class="eyebrow">VKR / Nuxt 4</p>
-        <h1>Клавиатурный тренажер для начинающих и продвинутых пользователей</h1>
-        <p class="lead">
-          Стартовый набросок проекта: фронтенд на Nuxt 4, бэкенд на Node.js и
-          Express. Уже можно получать текст урока, печатать и видеть базовую
-          точность.
-        </p>
-        <div class="hero__actions">
-          <button class="primary-btn" type="button" @click="fetchLesson">
-            Новый текст
-          </button>
-        </div>
-      </div>
+  <main class="page-shell">
+    <BrandHero />
 
-      <div class="stats-panel">
-        <div>
-          <span class="stats-label">Символов</span>
-          <strong>{{ stats.totalChars }}</strong>
-        </div>
-        <div>
-          <span class="stats-label">Верно</span>
-          <strong>{{ stats.correctChars }}</strong>
-        </div>
-        <div>
-          <span class="stats-label">Точность</span>
-          <strong>{{ stats.accuracy }}%</strong>
-        </div>
-      </div>
+    <section v-if="!currentUser" class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+      <AuthPanel
+        :auth-mode="authMode"
+        :is-pending="isPending"
+        :auth-message="authMessage"
+        :register-form="registerForm"
+        :login-form="loginForm"
+        :clan-pitch="clanPitch"
+        @switch-mode="switchMode"
+        @select-avatar="selectAvatar"
+        @choose-emoji="chooseEmoji"
+        @register="handleRegister"
+        @login="handleLogin"
+      />
+      <HomePitchCard />
     </section>
 
-    <section class="trainer">
-      <div class="trainer__block">
-        <p class="trainer__label">Текст для тренировки</p>
-        <div class="trainer__text">
-          {{ sampleText }}
-        </div>
-      </div>
-
-      <div class="trainer__block">
-        <label class="trainer__label" for="typing-area">Твоя попытка</label>
-        <textarea
-          id="typing-area"
-          v-model="typedText"
-          class="trainer__input"
-          placeholder="Начни печатать здесь..."
-          rows="8"
-        />
-      </div>
+    <section v-else class="grid gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.4fr)]">
+      <ProfilePanel :user="currentUser" @logout="handleLogout" />
+      <TrainerPanel
+        :lesson-text="lessonText"
+        :lesson-level="lessonLevel"
+        :typed-text="typedText"
+        :stats="stats"
+        @update:typed-text="typedText = $event"
+        @refresh-lesson="fetchLesson"
+      />
     </section>
   </main>
 </template>

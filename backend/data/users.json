@@ -1,0 +1,44 @@
+[
+  {
+    "id": "dbda2e16-1e90-4c24-9bb2-37e9a26a3d95",
+    "login": "khalid-demo",
+    "nickname": "Khalid",
+    "emoji": "??",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Orbit",
+    "createdAt": "2026-04-29T17:42:42.989Z",
+    "passwordHash": "fcf730b6d95236ecd3c9fc2d92d7b6b2bb061514961aec041d6c7a7192f592e4",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "7f516215-616b-4701-9ed2-01fbfefaca60",
+    "login": "tengreyt",
+    "nickname": "Tengreyt",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Signal",
+    "createdAt": "2026-04-29T17:45:20.933Z",
+    "passwordHash": "5cc33c0ec9825b758ba8e7337b84d10bcad4ce5a9c095503861846ea23f48778",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "d7a19bf7-f0ad-4316-905c-fabdd6dec98b",
+    "login": "arthur",
+    "nickname": "Arthur",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Orbit",
+    "createdAt": "2026-04-29T17:47:26.514Z",
+    "passwordHash": "ad0788190e5a5fb9fe9f43c1e4a0f0653f65091df1193dcdd9af893a16d28ad2",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  }
+]
