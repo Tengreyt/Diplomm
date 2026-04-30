@@ -1,4 +1,4 @@
-﻿import { authStorageKey, avatarPresets } from "~/constants/auth";
+﻿import { authStorageKey } from "~/constants/auth";
 import type {
   AuthMode,
   AuthResponse,
@@ -25,7 +25,7 @@ export const useAuth = () => {
     password: "",
     nickname: "",
     emoji: "🔥",
-    avatarUrl: avatarPresets[0]
+    avatarUrl: ""
   });
 
   const loginForm = reactive<LoginForm>({
@@ -111,7 +111,7 @@ export const useAuth = () => {
   };
 
   const restoreSession = async (onSuccess?: () => Promise<void> | void) => {
-    if (!process.client) {
+    if (!import.meta.client) {
       return;
     }
 
@@ -165,4 +165,3 @@ export const useAuth = () => {
     logout
   };
 };
-

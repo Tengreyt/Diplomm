@@ -1,9 +1,9 @@
 export default defineNuxtConfig({
   modules: ["@nuxtjs/tailwindcss"],
   devtools: { enabled: true },
-  css: ["./app/assets/css/main.css"],
+  css: ["~/assets/css/main.css"],
   tailwindcss: {
-    cssPath: "./app/assets/css/main.css"
+    cssPath: "~/assets/css/main.css"
   },
   runtimeConfig: {
     public: {

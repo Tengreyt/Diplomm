@@ -174,8 +174,12 @@ app.get("/api/clans/:emoji", (request, response) => {
 
   response.json({
     emoji,
-    members: clanMembers.length,
-    sampleNicknames: clanMembers.slice(0, 5).map((user) => user.nickname)
+    members: clanMembers.map((user) => ({
+      id: user.id,
+      login: user.login,
+      nickname: user.nickname,
+      avatarUrl: user.avatarUrl || avatarPresets[0]
+    }))
   });
 });
 

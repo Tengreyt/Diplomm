@@ -25,7 +25,7 @@
 
     <div :class="sectionGrid()">
       <div :class="sectionBlock()">
-        <p :class="sectionLabel()">Текст для практики</p>
+        <span :class="sectionLabel()">Текст для практики</span>
         <div :class="practiceCard()">{{ lessonText }}</div>
       </div>
 
@@ -35,7 +35,7 @@
           id="typing-area"
           :value="typedText"
           rows="10"
-          :class="[textarea(), 'text-black resize-none']"
+          :class="textarea()"
           placeholder="Начни печатать здесь..."
           @input="emit('update:typedText', ($event.target as HTMLTextAreaElement).value)"
         ></textarea>
@@ -83,14 +83,14 @@ const styles = tv({
       "block text-xs font-semibold uppercase tracking-[0.18em] text-muted",
     ],
     statValue: ["mt-2 block text-3xl"],
-    sectionGrid: ["mt-6 grid gap-4 xl:grid-cols-2"],
+    sectionGrid: ["mt-6 grid items-start gap-4 xl:grid-cols-2"],
     sectionBlock: ["grid gap-3"],
-    sectionLabel: ["text-sm font-semibold text-muted"],
+    sectionLabel: ["block text-sm font-semibold leading-5 text-muted"],
     practiceCard: [
-      "min-h-[260px] rounded-2xl border border-slate-900/10 bg-slate-50 p-5 leading-8 text-ink",
+      "min-h-[274px] rounded-2xl border border-slate-900/10 bg-slate-50 p-5 leading-8 text-ink",
     ],
     textarea: [
-      "min-h-[260px] rounded-2xl border border-slate-900/10 bg-white/90 p-4 text-sm leading-6",
+      "min-h-[260px] resize-y rounded-2xl border border-slate-900/10 bg-white/90 p-4 text-sm leading-6 text-black",
     ],
     actionButton: [
       "rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800",
@@ -118,4 +118,3 @@ const {
   buttonRow,
 } = styles();
 </script>
-

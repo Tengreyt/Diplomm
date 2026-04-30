@@ -1,5 +1,5 @@
 <template>
-  <div :class="[panel(), root()]">
+  <div :class="root()">
     <div :class="segmentGroup()">
       <button
         :class="segmentButton({ active: authMode === 'register' })"
@@ -76,6 +76,9 @@
 
       <div :class="section()">
         <span :class="label()">Аватар</span>
+        <p :class="hintText()">
+          Выбери готовый вариант или вставь прямую ссылку на любую картинку.
+        </p>
         <div :class="grid4()">
           <button
             v-for="avatar in avatarPresets"
@@ -90,9 +93,12 @@
         <input
           v-model="registerForm.avatarUrl"
           type="url"
-          placeholder="или вставь ссылку на свой аватар"
+          placeholder="Своя аватарка: https://example.com/image.jpg"
           :class="inputField()"
         />
+        <p :class="avatarHelp()">
+          Подойдет ссылка, которую можно открыть в браузере: PNG, JPG, WEBP или SVG.
+        </p>
       </div>
 
       <button :class="actionButton()" type="submit">
@@ -133,7 +139,6 @@
 <script setup lang="ts">
 import { avatarPresets, emojiSuggestions } from "~/constants/auth";
 import type { AuthMode, LoginForm, RegisterForm } from "~/types/auth";
-import { avatarTile, emojiChip, panel, segmentButton } from "~/utils/ui";
 import { tv } from "tailwind-variants";
 
 defineProps<{
@@ -155,14 +160,20 @@ const emit = defineEmits<{
 
 const styles = tv({
   slots: {
-    root: ["p-6 md:p-7"],
+    root: [
+      "rounded-panel border border-slate-900/10 bg-white/90 p-6 shadow-soft backdrop-blur-xl md:p-7",
+    ],
     segmentGroup: ["inline-grid grid-cols-2 gap-1 rounded-2xl bg-slate-100/80 p-1"],
+    segmentButton: ["rounded-xl px-4 py-2 text-sm font-semibold transition"],
     form: ["mt-6 grid gap-5"],
     field: ["grid gap-2"],
     label: ["text-sm font-semibold text-muted"],
     section: ["grid gap-3"],
     grid4: ["grid grid-cols-4 gap-3"],
+    emojiChip: ["flex min-h-14 items-center justify-center rounded-2xl border text-2xl transition"],
+    avatarTile: ["rounded-2xl border bg-white p-2 transition"],
     hintText: ["text-sm leading-6 text-muted"],
+    avatarHelp: ["text-xs leading-5 text-muted"],
     inputField: [
       "w-full rounded-2xl border border-slate-300/70 bg-white/90 px-4 py-3 text-sm text-ink outline-none",
       "transition focus:border-slate-900/80 focus:ring-2 focus:ring-slate-200"
@@ -176,8 +187,41 @@ const styles = tv({
     ],
     infoMessage: ["mt-4 rounded-2xl bg-slate-100 p-4 text-sm text-slate-700"],
   },
+  variants: {
+    active: {
+      true: {
+        segmentButton: "bg-accent text-slate-950 shadow-sm",
+        emojiChip: "border-accent bg-accent-soft shadow-sm",
+        avatarTile: "border-accent bg-accent-soft shadow-sm",
+      },
+      false: {
+        segmentButton: "text-muted hover:text-ink",
+        emojiChip: "border-slate-900/10 bg-white hover:-translate-y-0.5",
+        avatarTile: "border-slate-900/10 hover:-translate-y-0.5",
+      },
+    },
+  },
+  defaultVariants: {
+    active: false,
+  },
 });
 
-const { root, segmentGroup, form, field, label, section, grid4, hintText, actionButton, inputField, messageWarning, infoMessage } =
-  styles();
+const {
+  root,
+  segmentGroup,
+  segmentButton,
+  form,
+  field,
+  label,
+  section,
+  grid4,
+  emojiChip,
+  avatarTile,
+  hintText,
+  avatarHelp,
+  actionButton,
+  inputField,
+  messageWarning,
+  infoMessage,
+} = styles();
 </script>

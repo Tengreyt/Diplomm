@@ -12,6 +12,10 @@
     "nuxt": "^4.1.1",
     "tailwind-merge": "^3.5.0",
     "tailwind-variants": "^3.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.2.7"
   }
 }
-

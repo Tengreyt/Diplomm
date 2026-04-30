@@ -17,6 +17,13 @@ export type UserProfile = {
   stats: UserStats;
 };
 
+export type ClanMember = Pick<UserProfile, "id" | "login" | "nickname" | "avatarUrl">;
+
+export type ClanResponse = {
+  emoji: string;
+  members: ClanMember[];
+};
+
 export type AuthResponse = {
   token: string;
   user: UserProfile;
@@ -34,4 +41,3 @@ export type LoginForm = {
   login: string;
   password: string;
 };
-
