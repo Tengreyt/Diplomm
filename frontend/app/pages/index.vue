@@ -83,7 +83,7 @@ const styles = tv({
   slots: {
     root: ["page-shell"],
     guestGrid: ["grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]"],
-    appGrid: ["grid gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.4fr)]"],
+    appGrid: ["grid items-stretch gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.4fr)]"],
   },
 });
 

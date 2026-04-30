@@ -69,7 +69,7 @@ const emit = defineEmits<{
 const styles = tv({
   slots: {
     root: [
-      "rounded-panel border border-slate-900/10 bg-white/80 shadow-soft backdrop-blur-xl p-6 md:p-7",
+      "h-[calc(100vh-8rem)] min-h-[560px] rounded-panel border border-slate-900/10 bg-white/80 p-6 shadow-soft backdrop-blur-xl md:p-7",
     ],
     header: ["flex flex-col justify-between gap-4 md:flex-row md:items-start"],
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
