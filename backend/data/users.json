@@ -124,5 +124,19 @@
       "bestAccuracy": 0,
       "bestWpm": 0
     }
+  },
+  {
+    "id": "67fd0e90-76e0-4f3c-af1f-56b5c035f6a3",
+    "login": "augustin ii",
+    "nickname": "Augustin",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/adventurer/svg?seed=Aiden",
+    "createdAt": "2026-05-01T21:46:24.401Z",
+    "passwordHash": "3cc849279ba298b587a34cabaeffc5ecb3a044bbf97c516fab7ede9d1af77cfa",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
   }
 ]

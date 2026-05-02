@@ -101,9 +101,9 @@
         </p>
       </div>
 
-      <button :class="actionButton()" type="submit">
+      <BaseButton :class="actionButton()" type="submit">
         {{ isPending ? 'Создаем профиль...' : 'Продолжить' }}
-      </button>
+      </BaseButton>
     </form>
 
     <form v-else :class="form()" @submit.prevent="emit('login')">
@@ -140,6 +140,7 @@
 import { avatarPresets, emojiSuggestions } from "~/constants/auth";
 import type { AuthMode, LoginForm, RegisterForm } from "~/types/auth";
 import { tv } from "tailwind-variants";
+import BaseButton from "~/components/ui/BaseButton.vue";
 
 defineProps<{
   authMode: AuthMode;
@@ -225,4 +226,7 @@ const {
   messageWarning,
   infoMessage,
 } = styles();
+
+// register global component locally for template usage
+const components = { BaseButton } as any;
 </script>
