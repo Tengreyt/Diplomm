@@ -14,7 +14,7 @@
           <h2 :class="title()">Участники</h2>
           <span :class="memberCount()">
             <span :class="memberIcon()">👥</span>
-            {{ members.length }}
+            {{ formatCompactCount(members.length) }}
           </span>
         </div>
       </div>
@@ -25,29 +25,40 @@
       <p v-else-if="errorMessage" :class="stateText()">{{ errorMessage }}</p>
       <p v-else-if="members.length === 0" :class="stateText()">В клане пока никого нет.</p>
 
-      <template v-else>
-        <div
-          v-for="member in members"
-          :key="member.id"
-          :class="memberRow()"
-        >
+     <template v-else>
+      <div
+        v-for="(member, index) in members"
+        :key="member.id"
+        :class="memberRow()"
+      >
+        <div class="text-center font-bold">
+          <span v-if="index === 0" class="text-yellow-500">👑1</span>
+          <span v-else-if="index === 1" class="text-gray-400">👑2</span>
+          <span v-else-if="index === 2" class="text-amber-700">👑3</span>
+          <span v-else>{{ index + 1 }}</span>
+        </div>
+
+        <div class="flex items-center gap-3">
           <img
             :src="member.avatarUrl"
             alt="avatar"
             :class="avatar()"
           />
+
           <div>
             <strong :class="nickname()">{{ member.nickname }}</strong>
             <p :class="login()">@{{ member.login }}</p>
           </div>
         </div>
-      </template>
+      </div>
+    </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ClanMember } from "~/types/auth";
+import { formatCompactCount } from "../../utils/format";
 import { tv } from "tailwind-variants";
 
 defineProps<{
@@ -77,7 +88,7 @@ const styles = tv({
     memberIcon: ["text-base leading-none"],
     list: ["mt-5 grid gap-3"],
     memberRow: [
-      "grid grid-cols-[56px_1fr] items-center gap-3 rounded-2xl border border-slate-900/10 bg-white/90 p-3",
+      "grid grid-cols-[40px_1fr] items-center gap-3 rounded-2xl border border-slate-900/10 bg-white/90 p-3",
     ],
     avatar: ["h-14 w-14 rounded-[5px] object-cover"],
     nickname: ["block text-base font-semibold text-ink"],

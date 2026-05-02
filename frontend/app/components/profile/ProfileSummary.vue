@@ -33,7 +33,7 @@
           <strong :class="statValue()">{{ user.emoji }}</strong>
           <span :class="memberBadge()">
             <span :class="memberIcon()">👥</span>
-            {{ user.clanMembers }}
+            {{ formatCompactCount(user.clanMembers) }}
           </span>
         </span>
       </button>
@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import type { UserProfile } from "~/types/auth";
 import IconSettings from "~/components/icons/IconSettings.vue";
+import { formatCompactCount } from "../../utils/format";
 import { tv } from "tailwind-variants";
 
 defineProps<{

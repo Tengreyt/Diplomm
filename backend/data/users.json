@@ -40,5 +40,89 @@
       "bestAccuracy": 0,
       "bestWpm": 0
     }
+  },
+  {
+    "id": "5d27318f-93f6-48d4-9240-6f1ec33f09a3",
+    "login": "qwe",
+    "nickname": "qwetry",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Nova",
+    "createdAt": "2026-04-30T22:03:15.956Z",
+    "passwordHash": "3cc849279ba298b587a34cabaeffc5ecb3a044bbf97c516fab7ede9d1af77cfa",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "1a06118d-a553-48b8-88ae-fcb20672507a",
+    "login": "rty",
+    "nickname": "rtyrty",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Pixel",
+    "createdAt": "2026-04-30T22:03:28.656Z",
+    "passwordHash": "07bf6e5e9a4a768fe7835ffd5cb138d6af1763845e3afd3b113962f7c3c07f87",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "e9891fe7-9df7-4960-afd6-ba4d362d0423",
+    "login": "asd",
+    "nickname": "asdasd",
+    "emoji": "🦊",
+    "avatarUrl": "https://ru.pngtree.com/freepng/messi-action_21101998.html",
+    "createdAt": "2026-04-30T22:04:44.470Z",
+    "passwordHash": "5fd924625f6ab16a19cc9807c7c506ae1813490e4ba675f843d5a10e0baacdb8",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "8ab0ad40-807e-41ec-83cd-f8866603b7be",
+    "login": "fgh",
+    "nickname": "fghfgh",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Orbit",
+    "createdAt": "2026-04-30T22:05:04.163Z",
+    "passwordHash": "e7f4da38fcf33ffebc74ed681291a74be0afedca2a104b8e5b798936c3fab986",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "fox-test-0001",
+    "login": "fox-test-0001",
+    "nickname": "Fox Test 1",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=FoxTest1",
+    "createdAt": "2026-04-30T00:00:00.000Z",
+    "passwordHash": "test-user",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "fox-test-0002",
+    "login": "fox-test-0002",
+    "nickname": "Fox Test 2",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=FoxTest2",
+    "createdAt": "2026-04-30T00:00:00.000Z",
+    "passwordHash": "test-user",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
   }
 ]
