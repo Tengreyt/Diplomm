@@ -61,13 +61,13 @@
             {{ emoji }}
           </button>
         </div>
-        <input
-          v-model="registerForm.emoji"
-          type="text"
-          maxlength="4"
-          placeholder="или впиши свой эмоджи"
-          :class="inputField()"
-        />
+          <input
+            :value="registerForm.emoji"
+            type="text"
+            disabled
+            placeholder="Выбери эмоджи выше"
+            :class="inputField()"
+          />
         <p :class="hintText()">{{ clanPitch }}</p>
         <div :class="messageWarning()">
           Этот выбор нельзя менять после регистрации.
@@ -176,7 +176,8 @@ const styles = tv({
     avatarHelp: ["text-xs leading-5 text-muted"],
     inputField: [
       "w-full rounded-2xl border border-slate-300/70 bg-white/90 px-4 py-3 text-sm text-ink outline-none",
-      "transition focus:border-slate-900/80 focus:ring-2 focus:ring-slate-200"
+      "transition focus:border-slate-900/80 focus:ring-2 focus:ring-slate-200",
+      "disabled:opacity-100 disabled:bg-white disabled:cursor-default"
     ],
     actionButton: [
       "w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800",

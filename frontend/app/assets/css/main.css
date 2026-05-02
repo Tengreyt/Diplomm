@@ -77,3 +77,18 @@
     background: linear-gradient(180deg, rgba(31, 122, 132, 0.9), rgba(227, 101, 58, 0.76));
   }
 }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
