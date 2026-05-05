@@ -6,17 +6,30 @@
         v-if="viewMode === 'profile'"
         :user="user"
         @open-clan="openClan"
+        @open-clan-rating="openClanRating"
         @open-settings="openSettings"
         @logout="emit('logout')"
       />
 
       <ProfileClanTable
         v-else-if="viewMode === 'clan'"
-        :emoji="user.emoji"
+        :emoji="activeClanEmoji || user.emoji"
         :members="clanMembers"
         :is-loading="isClanLoading"
         :error-message="clanError"
+        :clan-rank="activeClanRank"
+        :clan-points="activeClanPoints"
+        :total-members="activeClanMembers"
+        @back="handleClanBack"
+      />
+
+      <ProfileClanRating
+        v-else-if="viewMode === 'clanRating'"
+        :clans="clanRating"
+        :is-loading="isClanRatingLoading"
+        :error-message="clanRatingError"
         @back="viewMode = 'profile'"
+        @open-clan="openClanFromRating"
       />
 
       <ProfileSettings
@@ -29,7 +42,13 @@
 </template>
 
 <script setup lang="ts">
-import type { ClanMember, ClanResponse, UserProfile } from "~/types/auth";
+import type {
+  ClanMember,
+  ClanRatingItem,
+  ClanRatingResponse,
+  ClanResponse,
+  UserProfile
+} from "~/types/auth";
 import { tv } from "tailwind-variants";
 
 const props = defineProps<{
@@ -41,10 +60,18 @@ const emit = defineEmits<{
 }>();
 
 const config = useRuntimeConfig();
-const viewMode = ref<"profile" | "clan" | "settings">("profile");
+const viewMode = ref<"profile" | "clan" | "clanRating" | "settings">("profile");
 const clanMembers = ref<ClanMember[]>([]);
 const isClanLoading = ref(false);
 const clanError = ref("");
+const clanRating = ref<ClanRatingItem[]>([]);
+const isClanRatingLoading = ref(false);
+const clanRatingError = ref("");
+const activeClanEmoji = ref("");
+const activeClanRank = ref<number | null>(null);
+const activeClanPoints = ref<number | null>(null);
+const activeClanMembers = ref<number | null>(null);
+const loadedClanEmoji = ref("");
 
 const clanLevel = computed(() => {
   const members = props.user.clanMembers;
@@ -95,8 +122,16 @@ const clanAuraStyle = computed(() => {
 
 const openClan = async () => {
   viewMode.value = "clan";
+  activeClanEmoji.value = props.user.emoji;
+  activeClanRank.value = null;
+  activeClanPoints.value = null;
+  activeClanMembers.value = null;
 
-  if (clanMembers.value.length > 0) {
+  await loadClanMembers(props.user.emoji);
+};
+
+const loadClanMembers = async (emoji: string) => {
+  if (clanMembers.value.length > 0 && loadedClanEmoji.value === emoji) {
     return;
   }
 
@@ -105,12 +140,14 @@ const openClan = async () => {
 
   try {
     const response = await $fetch<ClanResponse>(
-      `${config.public.apiBase}/clans/${encodeURIComponent(props.user.emoji)}`
+      `${config.public.apiBase}/clans/${encodeURIComponent(emoji)}`
     );
 
     clanMembers.value = response.members;
+    loadedClanEmoji.value = emoji;
   } catch {
     clanError.value = "Не удалось загрузить участников клана.";
+    loadedClanEmoji.value = "";
   } finally {
     isClanLoading.value = false;
   }
@@ -120,12 +157,60 @@ const openSettings = () => {
   viewMode.value = "settings";
 };
 
+const openClanRating = async () => {
+  viewMode.value = "clanRating";
+
+  if (clanRating.value.length > 0) {
+    return;
+  }
+
+  isClanRatingLoading.value = true;
+  clanRatingError.value = "";
+
+  try {
+    const response = await $fetch<ClanRatingResponse>(
+      `${config.public.apiBase}/clans`
+    );
+    clanRating.value = response.clans;
+  } catch {
+    clanRatingError.value = "Не удалось загрузить рейтинг кланов.";
+  } finally {
+    isClanRatingLoading.value = false;
+  }
+};
+
+const openClanFromRating = async (clan: ClanRatingItem, index: number) => {
+  viewMode.value = "clan";
+  activeClanEmoji.value = clan.emoji;
+  activeClanRank.value = index + 1;
+  activeClanPoints.value = clan.points;
+  activeClanMembers.value = clan.members;
+
+  await loadClanMembers(clan.emoji);
+};
+
+const handleClanBack = () => {
+  if (activeClanRank.value !== null) {
+    viewMode.value = "clanRating";
+    return;
+  }
+
+  viewMode.value = "profile";
+};
+
 watch(
   () => props.user.emoji,
   () => {
     viewMode.value = "profile";
     clanMembers.value = [];
     clanError.value = "";
+    clanRating.value = [];
+    clanRatingError.value = "";
+    activeClanEmoji.value = "";
+    activeClanRank.value = null;
+    activeClanPoints.value = null;
+    activeClanMembers.value = null;
+    loadedClanEmoji.value = "";
   }
 );
 

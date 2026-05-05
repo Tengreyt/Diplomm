@@ -26,7 +26,7 @@
         :lesson-level="lessonLevel"
         :typed-text="typedText"
         :stats="stats"
-        @update:typed-text="typedText = $event"
+        @update:typed-text="updateTypedText"
         @refresh-lesson="fetchLesson"
       />
     </section>
@@ -59,6 +59,7 @@ const {
   typedText,
   stats,
   fetchLesson,
+  updateTypedText,
   resetTrainer
 } = useTrainer();
 
