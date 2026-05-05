@@ -24,6 +24,16 @@ export type ClanResponse = {
   members: ClanMember[];
 };
 
+export type ClanRatingItem = {
+  emoji: string;
+  members: number;
+  points: number;
+};
+
+export type ClanRatingResponse = {
+  clans: ClanRatingItem[];
+};
+
 export type AuthResponse = {
   token: string;
   user: UserProfile;

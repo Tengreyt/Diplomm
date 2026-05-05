@@ -22,9 +22,16 @@
     "createdAt": "2026-04-29T17:45:20.933Z",
     "passwordHash": "5cc33c0ec9825b758ba8e7337b84d10bcad4ce5a9c095503861846ea23f48778",
     "stats": {
-      "testsCompleted": 0,
-      "bestAccuracy": 0,
-      "bestWpm": 0
+      "testsCompleted": 33,
+      "bestAccuracy": 100,
+      "bestWpm": 684
+    },
+    "lastResult": {
+      "wpm": 54,
+      "accuracy": 99,
+      "errors": 1,
+      "seconds": 15,
+      "createdAt": "2026-05-05T21:34:01.322Z"
     }
   },
   {
@@ -137,6 +144,62 @@
       "testsCompleted": 0,
       "bestAccuracy": 0,
       "bestWpm": 0
+    }
+  },
+  {
+    "id": "bcbdb598-9cf1-42b5-948b-4912f2140e7b",
+    "login": "deni",
+    "nickname": "Denchik",
+    "emoji": "🔥",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Signal",
+    "createdAt": "2026-05-04T11:01:08.062Z",
+    "passwordHash": "3cc849279ba298b587a34cabaeffc5ecb3a044bbf97c516fab7ede9d1af77cfa",
+    "stats": {
+      "testsCompleted": 0,
+      "bestAccuracy": 0,
+      "bestWpm": 0
+    }
+  },
+  {
+    "id": "eeedf070-de8b-44b3-ae7d-0f7be6836d91",
+    "login": "taramovkhalid",
+    "nickname": "galnash",
+    "emoji": "🦊",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Signal",
+    "createdAt": "2026-05-05T10:06:45.552Z",
+    "passwordHash": "6b36d928bfee201ab2416011bf38d4da47cbf1518f943a7815c1069424d5e133",
+    "stats": {
+      "testsCompleted": 10,
+      "bestAccuracy": 100,
+      "bestWpm": 138
+    },
+    "lastResult": {
+      "wpm": 138,
+      "accuracy": 100,
+      "errors": 0,
+      "seconds": 2,
+      "createdAt": "2026-05-05T10:11:05.948Z"
+    }
+  },
+  {
+    "id": "f98d3fac-349c-4e45-80a4-2b8613424c1e",
+    "login": "tamila",
+    "nickname": "mila",
+    "emoji": "🌙",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=Nova",
+    "createdAt": "2026-05-05T13:07:09.500Z",
+    "passwordHash": "2558a34d4d20964ca1d272ab26ccce9511d880579593cd4c9e01ab91ed00f325",
+    "stats": {
+      "testsCompleted": 2,
+      "bestAccuracy": 100,
+      "bestWpm": 684
+    },
+    "lastResult": {
+      "wpm": 684,
+      "accuracy": 100,
+      "errors": 0,
+      "seconds": 1,
+      "createdAt": "2026-05-05T13:08:57.077Z"
     }
   }
 ]

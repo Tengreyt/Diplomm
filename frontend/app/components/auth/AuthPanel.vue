@@ -101,7 +101,7 @@
         </p>
       </div>
 
-      <BaseButton :class="actionButton()" type="submit">
+      <BaseButton :class="actionButton()" type="submit" :disabled="isPending">
         {{ isPending ? 'Создаем профиль...' : 'Продолжить' }}
       </BaseButton>
     </form>
@@ -127,9 +127,9 @@
         />
       </label>
 
-      <button :class="actionButton()" type="submit">
+      <BaseButton :class="actionButton()" type="submit" :disabled="isPending">
         {{ isPending ? 'Входим...' : 'Войти' }}
-      </button>
+      </BaseButton>
     </form>
 
     <p v-if="authMessage" :class="infoMessage()">{{ authMessage }}</p>
@@ -139,8 +139,8 @@
 <script setup lang="ts">
 import { avatarPresets, emojiSuggestions } from "~/constants/auth";
 import type { AuthMode, LoginForm, RegisterForm } from "~/types/auth";
-import { tv } from "tailwind-variants";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import { tv } from "tailwind-variants";
 
 defineProps<{
   authMode: AuthMode;
@@ -226,7 +226,4 @@ const {
   messageWarning,
   infoMessage,
 } = styles();
-
-// register global component locally for template usage
-const components = { BaseButton } as any;
 </script>

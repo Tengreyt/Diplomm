@@ -37,6 +37,21 @@
           </span>
         </span>
       </button>
+
+      <button
+        type="button"
+        :class="clanButton()"
+        @click="emit('openClanRating')"
+      >
+        <span :class="statLabel()">Рейтинг</span>
+        <span :class="clanValueRow()">
+          <strong :class="statValue()">🏆</strong>
+          <span :class="memberBadge()">
+            <span :class="memberIcon()">📊</span>
+            Кланы
+          </span>
+        </span>
+      </button>
     </div>
 
     <div :class="clanNote()">
@@ -65,7 +80,7 @@
 <script setup lang="ts">
 import type { UserProfile } from "~/types/auth";
 import IconSettings from "~/components/icons/IconSettings.vue";
-import { formatCompactCount } from "../../utils/format";
+import { formatCompactCount } from "~/utils/format";
 import { tv } from "tailwind-variants";
 
 defineProps<{
@@ -74,6 +89,7 @@ defineProps<{
 
 const emit = defineEmits<{
   openClan: [];
+  openClanRating: [];
   openSettings: [];
   logout: [];
 }>();
@@ -91,7 +107,7 @@ const styles = tv({
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
     title: ["mt-2 text-3xl font-semibold text-ink"],
     login: ["mt-1 text-sm text-muted"],
-    statsGrid: ["mt-5"],
+    statsGrid: ["mt-5 grid grid-cols-2 gap-3"],
     clanButton: [
       "w-full rounded-2xl border border-slate-900/10 bg-white/90 p-4 text-left transition",
       "hover:border-clan-teal/60 hover:bg-clan-teal/10",

@@ -1,20 +1,26 @@
 <template>
   <div>
     <div :class="topbar()">
-      <button
-        type="button"
-        :class="backButton()"
-        @click="emit('back')"
-      >
-        Назад
-      </button>
-      <div>
+      <BackButton @click="emit('back')" />
+      <div :class="heading()">
         <p :class="kicker()">Клан {{ emoji }}</p>
         <div :class="titleRow()">
           <h2 :class="title()">Участники</h2>
           <span :class="memberCount()">
             <span :class="memberIcon()">👥</span>
-            {{ formatCompactCount(members.length) }}
+            {{ formatCompactCount(totalMembers) }}
+          </span>
+          <span
+            v-if="clanRank !== null"
+            :class="ratingBadge()"
+          >
+            #{{ clanRank }}
+          </span>
+          <span
+            v-if="clanPoints !== null"
+            :class="pointsBadge()"
+          >
+            🏆 {{ clanPoints }}
           </span>
         </div>
       </div>
@@ -25,48 +31,54 @@
       <p v-else-if="errorMessage" :class="stateText()">{{ errorMessage }}</p>
       <p v-else-if="members.length === 0" :class="stateText()">В клане пока никого нет.</p>
 
-     <template v-else>
-      <div
-        v-for="(member, index) in members"
-        :key="member.id"
-        :class="memberRow()"
-      >
-        <div class="text-center font-bold">
-          <span v-if="index === 0" class="text-yellow-500">👑1</span>
-          <span v-else-if="index === 1" class="text-gray-400">👑2</span>
-          <span v-else-if="index === 2" class="text-amber-700">👑3</span>
-          <span v-else>{{ index + 1 }}</span>
-        </div>
+      <template v-else>
+        <div
+          v-for="(member, index) in members"
+          :key="member.id"
+          :class="memberRow()"
+        >
+          <div class="text-center font-bold">
+            <span v-if="index === 0" class="text-yellow-500">👑1</span>
+            <span v-else-if="index === 1" class="text-gray-400">👑2</span>
+            <span v-else-if="index === 2" class="text-amber-700">👑3</span>
+            <span v-else>{{ index + 1 }}</span>
+          </div>
 
-        <div class="flex items-center gap-3">
-          <img
-            :src="member.avatarUrl"
-            alt="avatar"
-            :class="avatar()"
-          />
+          <div class="flex items-center gap-3">
+            <img
+              :src="member.avatarUrl"
+              :alt="`Аватар ${member.nickname}`"
+              :class="avatar()"
+            />
 
-          <div>
-            <strong :class="nickname()">{{ member.nickname }}</strong>
-            <p :class="login()">@{{ member.login }}</p>
+            <div>
+              <strong :class="nickname()">{{ member.nickname }}</strong>
+              <p :class="login()">@{{ member.login }}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </template>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ClanMember } from "~/types/auth";
-import { formatCompactCount } from "../../utils/format";
+import BackButton from "~/components/ui/BackButton.vue";
+import { formatCompactCount } from "~/utils/format";
 import { tv } from "tailwind-variants";
 
-defineProps<{
+const props = defineProps<{
   emoji: string;
   members: ClanMember[];
   isLoading: boolean;
   errorMessage: string;
+  totalMembers?: number | null;
+  clanRank?: number | null;
+  clanPoints?: number | null;
 }>();
+
+const totalMembers = computed(() => props.totalMembers ?? props.members.length);
 
 const emit = defineEmits<{
   back: [];
@@ -75,15 +87,18 @@ const emit = defineEmits<{
 const styles = tv({
   slots: {
     topbar: ["flex items-start gap-4"],
-    backButton: [
-      "rounded-2xl border border-slate-900/10 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-900 transition",
-      "hover:border-clan-teal/60 hover:bg-clan-teal/10",
-    ],
+    heading: ["min-w-0 flex-1"],
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
-    title: ["mt-2 text-3xl font-semibold text-ink"],
-    titleRow: ["flex items-center gap-3"],
+    title: ["text-3xl font-semibold text-ink"],
+    titleRow: ["mt-2 flex flex-wrap items-center gap-2"],
     memberCount: [
-      "mt-2 inline-flex items-center gap-1 rounded-full bg-clan-teal/10 px-3 py-1 text-sm font-semibold text-clan-teal",
+      "inline-flex items-center gap-1 rounded-full bg-clan-teal/10 px-3 py-1 text-sm font-semibold text-clan-teal",
+    ],
+    ratingBadge: [
+      "inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700",
+    ],
+    pointsBadge: [
+      "inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700",
     ],
     memberIcon: ["text-base leading-none"],
     list: ["mt-5 grid gap-3"],
@@ -99,11 +114,13 @@ const styles = tv({
 
 const {
   topbar,
-  backButton,
+  heading,
   kicker,
   title,
   titleRow,
   memberCount,
+  ratingBadge,
+  pointsBadge,
   memberIcon,
   list,
   memberRow,

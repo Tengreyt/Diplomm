@@ -1,13 +1,7 @@
 <template>
   <div>
     <div :class="topbar()">
-      <button
-        type="button"
-        :class="backButton()"
-        @click="emit('back')"
-      >
-        Назад
-      </button>
+      <BackButton @click="emit('back')" />
       <div>
         <p :class="kicker()">Профиль</p>
         <div :class="titleRow()">
@@ -36,6 +30,7 @@
 
 <script setup lang="ts">
 import type { UserProfile } from "~/types/auth";
+import BackButton from "~/components/ui/BackButton.vue";
 import IconSettings from "~/components/icons/IconSettings.vue";
 import { tv } from "tailwind-variants";
 
@@ -50,10 +45,6 @@ const emit = defineEmits<{
 const styles = tv({
   slots: {
     topbar: ["flex items-start gap-4"],
-    backButton: [
-      "rounded-2xl border border-slate-900/10 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-900 transition",
-      "hover:border-clan-teal/60 hover:bg-clan-teal/10",
-    ],
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
     titleRow: ["flex items-center gap-3"],
     title: ["mt-2 text-3xl font-semibold text-ink"],
@@ -69,7 +60,6 @@ const styles = tv({
 
 const {
   topbar,
-  backButton,
   kicker,
   titleRow,
   title,
