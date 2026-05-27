@@ -24,8 +24,11 @@
       <TrainerPanel
         :lesson-text="lessonText"
         :lesson-level="lessonLevel"
+        :selected-difficulty="selectedDifficulty"
         :typed-text="typedText"
         :stats="stats"
+        :result-message="resultMessage"
+        @update:difficulty="selectDifficulty"
         @update:typed-text="updateTypedText"
         @refresh-lesson="fetchLesson"
       />
@@ -56,9 +59,12 @@ const {
 const {
   lessonText,
   lessonLevel,
+  selectedDifficulty,
   typedText,
   stats,
+  resultMessage,
   fetchLesson,
+  selectDifficulty,
   updateTypedText,
   resetTrainer
 } = useTrainer();

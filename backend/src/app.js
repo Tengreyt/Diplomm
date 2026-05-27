@@ -22,9 +22,12 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 export const lessons = [
-  { id: 1, level: 'beginner', text: 'дом том ком сон фон дон' },
-  { id: 2, level: 'intermediate', text: 'Сегодня мы тренируем ровный ритм печати и аккуратное нажатие клавиш.' },
-  { id: 3, level: 'advanced', text: 'Съешь ещё этих мягких французских булок, да выпей же чаю.' }
+  { id: 1, level: 'beginner', levelLabel: 'Начальный', text: 'дом том ком сон фон дон' },
+  { id: 2, level: 'beginner', levelLabel: 'Начальный', text: 'мир дом рука окно свет' },
+  { id: 3, level: 'intermediate', levelLabel: 'Средний', text: 'Сегодня мы тренируем ровный ритм печати и аккуратное нажатие клавиш.' },
+  { id: 4, level: 'intermediate', levelLabel: 'Средний', text: 'Каждый точный символ помогает держать скорость без лишних исправлений.' },
+  { id: 5, level: 'advanced', levelLabel: 'Сложный', text: 'Съешь ещё этих мягких французских булок, да выпей же чаю.' },
+  { id: 6, level: 'advanced', levelLabel: 'Сложный', text: 'Когда темп растёт, важно сохранять дыхание, внимание и одинаковую силу нажатия.' }
 ];
 
 export const avatarPresets = userService.avatarPresets;
@@ -53,8 +56,11 @@ registerResultController({ app, getSession });
 // misc public endpoints used by frontend
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'keyboard-trainer-backend' }));
 
-app.get('/api/lesson', (_req, res) => {
-  const lesson = lessons[Math.floor(Math.random() * lessons.length)];
+app.get('/api/lesson', (req, res) => {
+  const requestedLevel = String(req.query.level ?? '').trim();
+  const availableLessons = lessons.filter((lesson) => lesson.level === requestedLevel);
+  const lessonPool = availableLessons.length > 0 ? availableLessons : lessons;
+  const lesson = lessonPool[Math.floor(Math.random() * lessonPool.length)];
   res.json(lesson);
 });
 

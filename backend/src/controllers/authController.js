@@ -38,8 +38,11 @@ export function registerAuthRoutes(app, createSession) {
       stats: {
         testsCompleted: 0,
         bestAccuracy: 0,
-        bestWpm: 0
-      }
+        bestWpm: 0,
+        points: 0
+      },
+      taskState: {},
+      taskCompletions: []
     };
 
     users.push(newUser);

@@ -3,7 +3,7 @@
     <div :class="header()">
       <div>
         <h3 :class="resultTitle()">Результат тренировки</h3>
-        <p :class="resultSubtitle()">Твой итог после прохождения урока</p>
+        <p :class="resultSubtitle()">{{ message || "Твой итог после прохождения урока" }}</p>
       </div>
 
       <div :class="accuracyCircleWrap()">
@@ -117,6 +117,7 @@ const props = defineProps<{
   accuracy: number;
   errors: number;
   seconds: number;
+  message?: string;
 }>();
 
 defineEmits<{

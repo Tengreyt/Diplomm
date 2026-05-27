@@ -1,5 +1,11 @@
 ﻿import { authStorageKey } from "~/constants/auth";
-import type { LessonResponse, TrainerStats } from "~/types/trainer";
+import type {
+  DifficultyLevel,
+  LessonResponse,
+  SaveResultResponse,
+  TrainerStats
+} from "~/types/trainer";
+import type { UserProfile } from "~/types/auth";
 
 const waitingLessonText = "После входа здесь появится текст тренировки.";
 const offlineLessonText =
@@ -10,10 +16,13 @@ export const useTrainer = () => {
 
   const lessonText = useState("trainer-lesson-text", () => waitingLessonText);
   const lessonLevel = useState("trainer-lesson-level", () => "waiting");
+  const selectedDifficulty = useState<DifficultyLevel>("trainer-difficulty", () => "beginner");
   const typedText = useState("trainer-typed-text", () => "");
   const startedAt = useState<number | null>("trainer-started-at", () => null);
   const elapsedSeconds = useState("trainer-elapsed-seconds", () => 0);
   const isResultSaved = useState("trainer-result-saved", () => false);
+  const resultMessage = useState("trainer-result-message", () => "");
+  const currentUser = useState<UserProfile | null>("auth-user", () => null);
 
   let timerId: ReturnType<typeof setInterval> | null = null;
 
@@ -87,15 +96,21 @@ export const useTrainer = () => {
   const fetchLesson = async () => {
     try {
       const response = await $fetch<LessonResponse>(
-        `${config.public.apiBase}/lesson`
+        `${config.public.apiBase}/lesson`,
+        {
+          query: {
+            level: selectedDifficulty.value,
+          },
+        }
       );
 
       lessonText.value = response.text;
-      lessonLevel.value = response.level;
+      lessonLevel.value = response.levelLabel;
       typedText.value = "";
       startedAt.value = null;
       elapsedSeconds.value = 0;
       isResultSaved.value = false;
+      resultMessage.value = "";
       stopTimer();
     } catch {
       lessonText.value = offlineLessonText;
@@ -104,8 +119,14 @@ export const useTrainer = () => {
       startedAt.value = null;
       elapsedSeconds.value = 0;
       isResultSaved.value = false;
+      resultMessage.value = "";
       stopTimer();
     }
+  };
+
+  const selectDifficulty = async (difficulty: DifficultyLevel) => {
+    selectedDifficulty.value = difficulty;
+    await fetchLesson();
   };
 
   const saveResult = async () => {
@@ -119,7 +140,7 @@ export const useTrainer = () => {
       return;
     }
 
-    await $fetch(`${config.public.apiBase}/results`, {
+    const response = await $fetch<SaveResultResponse>(`${config.public.apiBase}/results`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -131,6 +152,11 @@ export const useTrainer = () => {
         seconds: stats.value.seconds,
       },
     });
+
+    currentUser.value = response.user;
+    resultMessage.value = response.tasks.earnedPoints > 0
+      ? `Получено очков: ${response.tasks.earnedPoints}`
+      : "Результат сохранен.";
   };
 
   const updateTypedText = async (value: string) => {
@@ -149,6 +175,7 @@ export const useTrainer = () => {
       try {
         await saveResult();
       } catch {
+        resultMessage.value = "Результат посчитан, но сохранить его не удалось.";
         // The result screen still works locally if saving fails.
       }
     }
@@ -161,6 +188,7 @@ export const useTrainer = () => {
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
+    resultMessage.value = "";
     stopTimer();
   };
 
@@ -171,10 +199,13 @@ export const useTrainer = () => {
   return {
     lessonText,
     lessonLevel,
+    selectedDifficulty,
     typedText,
     stats,
     fetchLesson,
+    selectDifficulty,
     saveResult,
+    resultMessage,
     updateTypedText,
     resetTrainer,
   };

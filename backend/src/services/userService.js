@@ -1,5 +1,6 @@
 import usersRepo from '../repo/usersRepo.js';
 import crypto from 'crypto';
+import tasksService from './tasksService.js';
 
 const avatarPresets = [
   'https://api.dicebear.com/9.x/thumbs/svg?seed=Orbit',
@@ -16,6 +17,7 @@ export function createHash(value) {
 
 export function serializeUser(user, users) {
   const clanMembers = users.filter((entry) => entry.emoji === user.emoji).length;
+  const points = Number(user.stats?.points ?? 0);
 
   return {
     id: user.id,
@@ -25,7 +27,13 @@ export function serializeUser(user, users) {
     avatarUrl: user.avatarUrl || avatarPresets[0],
     clanMembers,
     createdAt: user.createdAt,
-    stats: user.stats
+    stats: {
+      testsCompleted: Number(user.stats?.testsCompleted ?? 0),
+      bestAccuracy: Number(user.stats?.bestAccuracy ?? 0),
+      bestWpm: Number(user.stats?.bestWpm ?? 0),
+      points
+    },
+    tasks: tasksService.getUserTasks(user)
   };
 }
 
@@ -44,5 +52,6 @@ export default {
   createHash,
   serializeUser,
   calculateClanPoints,
-  avatarPresets
+  avatarPresets,
+  applyTaskProgress: tasksService.applyTaskProgress
 };

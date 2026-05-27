@@ -4,6 +4,20 @@ export type UserStats = {
   testsCompleted: number;
   bestAccuracy: number;
   bestWpm: number;
+  points: number;
+};
+
+export type TaskPeriod = "daily" | "weekly";
+
+export type UserTask = {
+  id: string;
+  period: TaskPeriod;
+  title: string;
+  description: string;
+  target: number;
+  progress: number;
+  points: number;
+  completed: boolean;
 };
 
 export type UserProfile = {
@@ -15,9 +29,13 @@ export type UserProfile = {
   clanMembers: number;
   createdAt: string;
   stats: UserStats;
+  tasks: UserTask[];
 };
 
-export type ClanMember = Pick<UserProfile, "id" | "login" | "nickname" | "avatarUrl">;
+export type ClanMember = Pick<UserProfile, "id" | "login" | "nickname" | "avatarUrl"> & {
+  points: number;
+  testsCompleted: number;
+};
 
 export type ClanResponse = {
   emoji: string;

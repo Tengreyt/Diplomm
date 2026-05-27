@@ -48,8 +48,12 @@ npm run dev
 .
 ├── backend/
 │   ├── src/
-│   │   ├── index.js          # entrypoint backend, auth/lesson/profile/clans
-│   │   └── server.js         # маршрут сохранения результатов /api/results
+│   │   ├── index.js          # entrypoint backend
+│   │   ├── app.js            # Express app, sessions, /health, /lesson, /me
+│   │   ├── controllers/      # auth, clans, results routes
+│   │   ├── services/         # userService: auth helpers, serialization, clan points
+│   │   ├── repo/             # usersRepo: JSON storage
+│   │   └── server.js         # wrapper для result routes
 │   ├── data/
 │   │   └── users.json        # файловое хранилище пользователей
 │   └── package.json
@@ -75,8 +79,11 @@ npm run dev
 │   │   └── utils/
 │   ├── nuxt.config.ts
 │   └── package.json
+├── AGENTS.md                  # инструкции для ИИ-агентов и новых участников
 └── README.md
 ```
+
+Для подробной карты архитектуры, правил правок и подсказок для ИИ-агентов см. `AGENTS.md`.
 
 ## API (кратко)
 
@@ -84,7 +91,7 @@ npm run dev
 
 ### Сервисные
 - `GET /health` - проверка доступности backend
-- `GET /lesson` - получить случайный тренировочный текст
+- `GET /lesson?level=beginner|intermediate|advanced` - получить случайный тренировочный текст выбранной сложности
 
 ### Авторизация и профиль
 - `POST /auth/register` - регистрация  
@@ -92,11 +99,12 @@ npm run dev
 - `POST /auth/login` - вход  
   body: `login`, `password`
 - `GET /me` - текущий пользователь (требует `Authorization: Bearer <token>`)
+- `GET /clans` - рейтинг кланов
 - `GET /clans/:emoji` - участники клана по эмоджи
 
 ### Результаты тренировки
 - `POST /results` - сохранить результат (требует Bearer токен)  
-  body: `wpm`, `accuracy`, `errors`, `seconds`
+  body: `wpm`, `accuracy`, `errors`, `seconds`; ответ обновляет пользователя, задачи и очки
 
 ## Архитектура и поток данных
 
@@ -105,7 +113,8 @@ npm run dev
 3. После входа `useTrainer.ts` запрашивает урок через `/lesson`.
 4. Во время печати считаются метрики (accuracy/WPM/errors/time).
 5. После завершения отправляется результат в `/results`.
-6. Backend обновляет `stats` пользователя и сохраняет в `users.json`.
+6. Backend обновляет `stats`, прогресс ежедневных/еженедельных задач и очки пользователя.
+7. Очки пользователя суммируются в рейтинге кланов и сортировке участников внутри клана.
 
 ## Ограничения текущей реализации
 
@@ -113,24 +122,3 @@ npm run dev
 - Сессии хранятся в памяти процесса backend (`Map`), после перезапуска недействительны.
 - Пароли хешируются через SHA-256 (без соли), решение учебное, не production-ready.
 - Тестов и CI в репозитории сейчас нет.
-
-## Для ИИ и новых участников (экономия токенов)
-
-### Что читать в первую очередь
-1. `README.md` (этот файл)
-2. `backend/src/index.js`
-3. `backend/src/server.js`
-4. `frontend/app/pages/index.vue`
-5. `frontend/app/composables/useAuth.ts`
-6. `frontend/app/composables/useTrainer.ts`
-7. `frontend/app/types/auth.ts` и `frontend/app/types/trainer.ts`
-
-### Что обычно не нужно читать для задач по логике
-- `frontend/.nuxt/**` (генерируется Nuxt)
-- `frontend/.output/**` (build output)
-- `frontend/node_modules/**`
-
-### Перед любыми правками
-- Проверить, что backend и frontend запускаются локально.
-- Учитывать, что рабочее дерево может быть грязным (есть незакоммиченные изменения).
-- Не менять сгенерированные каталоги (`.nuxt`, `.output`) вручную.

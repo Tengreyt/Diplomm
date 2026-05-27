@@ -22,12 +22,6 @@ export function registerResultController({ app, getSession }) {
     const cleanErrors = Math.max(0, Math.round(Number(errors) || 0));
     const cleanSeconds = Math.max(0, Math.round(Number(seconds) || 0));
 
-    user.stats = {
-      testsCompleted: Number(user.stats?.testsCompleted ?? 0) + 1,
-      bestAccuracy: Math.max(Number(user.stats?.bestAccuracy ?? 0), cleanAccuracy),
-      bestWpm: Math.max(Number(user.stats?.bestWpm ?? 0), cleanWpm)
-    };
-
     user.lastResult = {
       wpm: cleanWpm,
       accuracy: cleanAccuracy,
@@ -36,9 +30,22 @@ export function registerResultController({ app, getSession }) {
       createdAt: new Date().toISOString()
     };
 
+    const taskSummary = userService.applyTaskProgress(user, user.lastResult, new Date(user.lastResult.createdAt));
+
+    user.stats = {
+      testsCompleted: Number(user.stats?.testsCompleted ?? 0) + 1,
+      bestAccuracy: Math.max(Number(user.stats?.bestAccuracy ?? 0), cleanAccuracy),
+      bestWpm: Math.max(Number(user.stats?.bestWpm ?? 0), cleanWpm),
+      points: Number(user.stats?.points ?? 0)
+    };
+
     userService.writeUsers(users);
 
-    response.json({ user: userService.serializeUser(user, users), result: user.lastResult });
+    response.json({
+      user: userService.serializeUser(user, users),
+      result: user.lastResult,
+      tasks: taskSummary
+    });
   });
 }
 

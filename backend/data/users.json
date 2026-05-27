@@ -22,17 +22,104 @@
     "createdAt": "2026-04-29T17:45:20.933Z",
     "passwordHash": "5cc33c0ec9825b758ba8e7337b84d10bcad4ce5a9c095503861846ea23f48778",
     "stats": {
-      "testsCompleted": 33,
+      "testsCompleted": 52,
       "bestAccuracy": 100,
-      "bestWpm": 684
+      "bestWpm": 684,
+      "points": 365
     },
     "lastResult": {
-      "wpm": 54,
-      "accuracy": 99,
-      "errors": 1,
-      "seconds": 15,
-      "createdAt": "2026-05-05T21:34:01.322Z"
-    }
+      "wpm": 92,
+      "accuracy": 100,
+      "errors": 0,
+      "seconds": 3,
+      "createdAt": "2026-05-27T04:53:14.743Z"
+    },
+    "taskState": {
+      "daily-finish:2026-05-27": {
+        "taskId": "daily-finish",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "progress": 1,
+        "completed": true,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      "daily-accuracy:2026-05-27": {
+        "taskId": "daily-accuracy",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "progress": 1,
+        "completed": true,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      "daily-speed:2026-05-27": {
+        "taskId": "daily-speed",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "progress": 1,
+        "completed": true,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      "weekly-volume:2026-W22": {
+        "taskId": "weekly-volume",
+        "period": "weekly",
+        "periodKey": "2026-W22",
+        "progress": 3,
+        "completed": false
+      },
+      "weekly-accuracy:2026-W22": {
+        "taskId": "weekly-accuracy",
+        "period": "weekly",
+        "periodKey": "2026-W22",
+        "progress": 3,
+        "completed": true,
+        "completedAt": "2026-05-27T04:53:14.743Z"
+      },
+      "weekly-speed:2026-W22": {
+        "taskId": "weekly-speed",
+        "period": "weekly",
+        "periodKey": "2026-W22",
+        "progress": 3,
+        "completed": true,
+        "completedAt": "2026-05-27T04:53:14.743Z"
+      }
+    },
+    "taskCompletions": [
+      {
+        "taskId": "daily-finish",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "points": 30,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      {
+        "taskId": "daily-accuracy",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "points": 45,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      {
+        "taskId": "daily-speed",
+        "period": "daily",
+        "periodKey": "2026-05-27",
+        "points": 50,
+        "completedAt": "2026-05-27T04:47:43.812Z"
+      },
+      {
+        "taskId": "weekly-accuracy",
+        "period": "weekly",
+        "periodKey": "2026-W22",
+        "points": 110,
+        "completedAt": "2026-05-27T04:53:14.743Z"
+      },
+      {
+        "taskId": "weekly-speed",
+        "period": "weekly",
+        "periodKey": "2026-W22",
+        "points": 130,
+        "completedAt": "2026-05-27T04:53:14.743Z"
+      }
+    ]
   },
   {
     "id": "d7a19bf7-f0ad-4316-905c-fabdd6dec98b",
