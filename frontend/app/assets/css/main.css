@@ -9,7 +9,8 @@
   }
 
   body {
-    @apply min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(227,101,58,0.22),transparent_24%),radial-gradient(circle_at_right_center,rgba(31,122,132,0.16),transparent_20%),linear-gradient(135deg,#f2ece4_0%,#dde7eb_100%)] text-ink;
+    @apply min-h-screen bg-[radial-gradient(circle_at_12%_8%,rgba(244,120,79,0.22),transparent_26%),radial-gradient(circle_at_86%_18%,rgba(45,212,191,0.16),transparent_28%),radial-gradient(circle_at_50%_100%,rgba(148,163,184,0.24),transparent_32%),linear-gradient(135deg,#f7f8fb_0%,#e7eef2_48%,#f8f4ef_100%)] text-ink;
+    background-attachment: fixed;
   }
 
   img {
@@ -20,7 +21,36 @@
 
 @layer components {
   .page-shell {
-    @apply mx-auto max-w-7xl px-5 py-8 md:py-10;
+    @apply mx-auto max-w-7xl px-5 py-2.5;
+  }
+
+  .glass-panel {
+    @apply border border-white/60 backdrop-blur-2xl;
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  }
+
+  .glass-card {
+    @apply border border-white/60 backdrop-blur-xl;
+    background: rgba(255, 255, 255, 0.46);
+    box-shadow: 0 12px 38px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  }
+
+  .glass-control {
+    @apply border border-white/60 backdrop-blur-xl;
+    background: rgba(255, 255, 255, 0.42);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .glass-input {
+    @apply border border-white/60 backdrop-blur-xl;
+    background: rgba(255, 255, 255, 0.48);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  }
+
+  .liquid-button {
+    @apply bg-slate-950 text-white transition hover:bg-slate-800;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
 
   input.p-inputtext,

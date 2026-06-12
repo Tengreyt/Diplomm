@@ -7,6 +7,7 @@
         :user="user"
         @open-clan="openClan"
         @open-clan-rating="openClanRating"
+        @open-ai-coach="openAiCoach"
         @open-settings="openSettings"
         @logout="emit('logout')"
       />
@@ -30,6 +31,15 @@
         :error-message="clanRatingError"
         @back="viewMode = 'profile'"
         @open-clan="openClanFromRating"
+      />
+
+      <ProfileAiCoachDetails
+        v-else-if="viewMode === 'aiCoach'"
+        :coach="profileCoach"
+        :is-loading="isCoachLoading"
+        @back="viewMode = 'profile'"
+        @refresh="refreshAiCoach"
+        @start="startAiCoachLesson"
       />
 
       <ProfileSettings
@@ -60,7 +70,7 @@ const emit = defineEmits<{
 }>();
 
 const config = useRuntimeConfig();
-const viewMode = ref<"profile" | "clan" | "clanRating" | "settings">("profile");
+const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "settings">("profile");
 const clanMembers = ref<ClanMember[]>([]);
 const isClanLoading = ref(false);
 const clanError = ref("");
@@ -72,6 +82,12 @@ const activeClanRank = ref<number | null>(null);
 const activeClanPoints = ref<number | null>(null);
 const activeClanMembers = ref<number | null>(null);
 const loadedClanEmoji = ref("");
+const {
+  profileCoach,
+  isCoachLoading,
+  fetchProfileCoach,
+} = useAiCoach();
+const { startCoachLesson } = useTrainer();
 
 const clanLevel = computed(() => {
   const members = props.user.clanMembers;
@@ -157,6 +173,25 @@ const openSettings = () => {
   viewMode.value = "settings";
 };
 
+const openAiCoach = async () => {
+  viewMode.value = "aiCoach";
+  await fetchProfileCoach();
+};
+
+const refreshAiCoach = async () => {
+  profileCoach.value = null;
+  await fetchProfileCoach();
+};
+
+const startAiCoachLesson = () => {
+  if (!profileCoach.value) {
+    return;
+  }
+
+  startCoachLesson(profileCoach.value);
+  viewMode.value = "profile";
+};
+
 const openClanRating = async () => {
   viewMode.value = "clanRating";
 
@@ -217,7 +252,7 @@ watch(
 const styles = tv({
   slots: {
     root: [
-      "relative h-[calc(100vh-8rem)] min-h-[560px] overflow-hidden rounded-panel border border-slate-900/10 bg-white/90 shadow-soft backdrop-blur-xl transition-[border-color,box-shadow] duration-700 ease-out",
+      "glass-panel relative h-[calc(100svh-1.25rem)] min-h-[620px] overflow-hidden rounded-panel transition-[border-color,box-shadow] duration-700 ease-out",
     ],
     clanAura: ["pointer-events-none absolute inset-0 transition-opacity duration-700 ease-out"],
     content: [

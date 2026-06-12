@@ -51,7 +51,7 @@ const styles = tv({
     titleIcon: ["mt-2 h-6 w-6 text-clan-teal"],
     settingsList: ["mt-5 grid gap-3"],
     settingRow: [
-      "rounded-2xl border border-slate-900/10 bg-white/90 p-4",
+      "glass-card rounded-2xl p-4",
     ],
     settingLabel: ["block text-xs font-semibold uppercase tracking-[0.18em] text-muted"],
     settingValue: ["mt-2 block text-base font-semibold text-ink"],

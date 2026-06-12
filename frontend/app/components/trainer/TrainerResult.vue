@@ -102,6 +102,22 @@
       </div>
     </div>
 
+    <div v-if="coach" :class="coachBox()">
+      <div :class="coachHeader()">
+        <span :class="coachKicker()">AI тренер</span>
+        <span :class="coachSource()">{{ coach.source === "openai" ? "OpenAI" : "Локальный режим" }}</span>
+      </div>
+      <strong :class="coachPraise()">{{ coach.praise }}</strong>
+      <p :class="coachAdvice()">{{ coach.advice }}</p>
+
+      <div :class="coachTask()">
+        <span>Следующее задание</span>
+        <strong>{{ coach.task.title }}</strong>
+        <p>{{ coach.task.description }}</p>
+        <code>{{ coach.task.targetText }}</code>
+      </div>
+    </div>
+
     <button :class="retryButton()" @click="$emit('retry')">
       Попробовать снова
     </button>
@@ -111,6 +127,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { tv } from "tailwind-variants";
+import type { AiCoach } from "~/types/coach";
 
 const props = defineProps<{
   wpm: number;
@@ -118,6 +135,7 @@ const props = defineProps<{
   errors: number;
   seconds: number;
   message?: string;
+  coach?: AiCoach | null;
 }>();
 
 defineEmits<{
@@ -157,7 +175,7 @@ const formattedTime = computed(() => {
 const styles = tv({
   slots: {
     resultRoot: [
-      "mt-6 mb-4 rounded-3xl border border-slate-900/10 bg-white p-6 shadow-xl shadow-slate-900/5",
+      "glass-panel mt-6 mb-4 rounded-3xl p-6",
     ],
 
     header: ["flex items-center justify-between gap-6"],
@@ -181,7 +199,7 @@ const styles = tv({
     resultGrid: ["mt-6 grid grid-cols-2 gap-3 md:grid-cols-4"],
 
     resultCard: [
-      "rounded-2xl bg-slate-100 p-4 text-center",
+      "glass-card rounded-2xl p-4 text-center",
       "[&_span]:block [&_span]:text-sm [&_span]:text-slate-500",
       "[&_strong]:mt-1 [&_strong]:block [&_strong]:text-xl [&_strong]:font-bold [&_strong]:text-slate-950",
     ],
@@ -193,12 +211,31 @@ const styles = tv({
       "[&_strong]:text-slate-950",
     ],
 
-    barTrack: ["h-3 overflow-hidden rounded-full bg-slate-100"],
+    barTrack: ["h-3 overflow-hidden rounded-full bg-white/50"],
 
     barFill: ["h-full rounded-full transition-all duration-700"],
 
+    coachBox: ["glass-card mt-6 rounded-2xl p-4"],
+
+    coachHeader: ["flex items-center justify-between gap-3"],
+
+    coachKicker: ["text-xs font-bold uppercase tracking-[0.2em] text-accent-deep"],
+
+    coachSource: ["rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-muted"],
+
+    coachPraise: ["mt-3 block text-lg font-bold leading-snug text-slate-950"],
+
+    coachAdvice: ["mt-2 text-sm leading-6 text-slate-600"],
+
+    coachTask: [
+      "mt-4 rounded-2xl bg-white/50 p-4 text-sm leading-6 text-slate-600",
+      "[&_span]:block [&_span]:text-xs [&_span]:font-bold [&_span]:uppercase [&_span]:tracking-[0.18em] [&_span]:text-muted",
+      "[&_strong]:mt-2 [&_strong]:block [&_strong]:text-base [&_strong]:text-slate-950",
+      "[&_code]:mt-3 [&_code]:block [&_code]:rounded-xl [&_code]:bg-slate-950 [&_code]:px-3 [&_code]:py-2 [&_code]:font-mono [&_code]:text-xs [&_code]:leading-5 [&_code]:text-white",
+    ],
+
     retryButton: [
-      "mt-6 w-full rounded-2xl bg-slate-950 py-3 font-semibold text-white transition hover:bg-slate-800",
+      "liquid-button mt-6 w-full rounded-2xl py-3 font-semibold",
     ],
   },
 
@@ -231,6 +268,13 @@ const {
   barTop,
   barTrack,
   barFill,
+  coachBox,
+  coachHeader,
+  coachKicker,
+  coachSource,
+  coachPraise,
+  coachAdvice,
+  coachTask,
   retryButton,
 } = styles();
 </script>

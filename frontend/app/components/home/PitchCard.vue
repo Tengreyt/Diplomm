@@ -19,7 +19,7 @@ import { tv } from "tailwind-variants";
 const styles = tv({
   slots: {
     root: [
-      "rounded-panel border border-slate-900/10 bg-white/90 p-6 shadow-soft backdrop-blur-xl md:p-7",
+      "glass-panel rounded-panel p-6 md:p-7",
     ],
     pills: ["grid grid-cols-2 justify-start gap-3"],
     pill: [

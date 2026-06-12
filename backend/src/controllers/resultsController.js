@@ -1,4 +1,5 @@
 import userService from '../services/userService.js';
+import aiCoachService from '../services/aiCoachService.js';
 
 export function registerResultController({ app, getSession }) {
   app.post('/api/results', async (request, response, next) => {
@@ -9,7 +10,14 @@ export function registerResultController({ app, getSession }) {
         return response.status(401).json({ message: 'Сессия не найдена.' });
       }
 
-      const { wpm = 0, accuracy = 0, errors = 0, seconds = 0 } = request.body ?? {};
+      const {
+        wpm = 0,
+        accuracy = 0,
+        errors = 0,
+        seconds = 0,
+        lessonText = '',
+        typedText = ''
+      } = request.body ?? {};
 
       const cleanWpm = Math.max(0, Math.round(Number(wpm) || 0));
       const cleanAccuracy = Math.max(0, Math.min(100, Math.round(Number(accuracy) || 0)));
@@ -46,7 +54,13 @@ export function registerResultController({ app, getSession }) {
       response.json({
         user: await userService.serializeUser(savedUser),
         result: savedUser.lastResult ?? lastResult,
-        tasks: taskSummary
+        tasks: taskSummary,
+        coach: await aiCoachService.buildCoach({
+          user: savedUser,
+          result: savedUser.lastResult ?? lastResult,
+          lessonText,
+          typedText
+        })
       });
     } catch (error) {
       next(error);
