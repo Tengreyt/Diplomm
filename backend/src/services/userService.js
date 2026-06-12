@@ -1,5 +1,7 @@
 import usersRepo from '../repo/usersRepo.js';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import tasksService from './tasksService.js';
 
 const avatarPresets = [
   'https://api.dicebear.com/9.x/thumbs/svg?seed=Orbit',
@@ -14,8 +16,30 @@ export function createHash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex');
 }
 
-export function serializeUser(user, users) {
-  const clanMembers = users.filter((entry) => entry.emoji === user.emoji).length;
+export async function hashPassword(password) {
+  return bcrypt.hash(String(password), 12);
+}
+
+export async function verifyPassword(password, passwordHash) {
+  const hash = String(passwordHash ?? '');
+
+  if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+    return bcrypt.compare(String(password), hash);
+  }
+
+  return createHash(password) === hash;
+}
+
+export function shouldUpgradePasswordHash(passwordHash) {
+  const hash = String(passwordHash ?? '');
+  return !(hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$'));
+}
+
+export async function serializeUser(user, users) {
+  const clanMembers = Array.isArray(users)
+    ? users.filter((entry) => entry.emoji === user.emoji).length
+    : await usersRepo.countClanMembers(user.emoji);
+  const points = Number(user.stats?.points ?? 0);
 
   return {
     id: user.id,
@@ -25,7 +49,13 @@ export function serializeUser(user, users) {
     avatarUrl: user.avatarUrl || avatarPresets[0],
     clanMembers,
     createdAt: user.createdAt,
-    stats: user.stats
+    stats: {
+      testsCompleted: Number(user.stats?.testsCompleted ?? 0),
+      bestAccuracy: Number(user.stats?.bestAccuracy ?? 0),
+      bestWpm: Number(user.stats?.bestWpm ?? 0),
+      points
+    },
+    tasks: tasksService.getUserTasks(user)
   };
 }
 
@@ -42,7 +72,11 @@ export function calculateClanPoints(emoji) {
 export default {
   ...usersRepo,
   createHash,
+  hashPassword,
+  verifyPassword,
+  shouldUpgradePasswordHash,
   serializeUser,
   calculateClanPoints,
-  avatarPresets
+  avatarPresets,
+  applyTaskProgress: tasksService.applyTaskProgress
 };

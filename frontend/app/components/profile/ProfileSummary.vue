@@ -18,11 +18,21 @@
         title="Настройки"
         @click="emit('openSettings')"
       >
-        <IconSettings :class="settingsIcon()" />
+        <Settings :class="settingsIcon()" aria-hidden="true" />
       </button>
     </div>
 
     <div :class="statsGrid()">
+      <div :class="pointsCard()">
+        <div :class="pointsTop()">
+          <span :class="statLabel()">Очки</span>
+          <span :class="pointsIcon()" aria-hidden="true">
+            <Star class="h-5 w-5" />
+          </span>
+        </div>
+        <strong :class="pointsValue()">{{ formatCompactCount(user.stats.points) }}</strong>
+      </div>
+
       <button
         type="button"
         :class="clanButton()"
@@ -54,6 +64,8 @@
       </button>
     </div>
 
+    <ProfileTasks :tasks="user.tasks" :points="user.stats.points" />
+
     <div :class="clanNote()">
       <div :class="pillWrap()">
         <span :class="pill()">
@@ -78,8 +90,9 @@
 </template>
 
 <script setup lang="ts">
+import { Settings, Star } from "@lucide/vue";
 import type { UserProfile } from "~/types/auth";
-import IconSettings from "~/components/icons/IconSettings.vue";
+import ProfileTasks from "~/components/profile/ProfileTasks.vue";
 import { formatCompactCount } from "~/utils/format";
 import { tv } from "tailwind-variants";
 
@@ -108,12 +121,20 @@ const styles = tv({
     title: ["mt-2 text-3xl font-semibold text-ink"],
     login: ["mt-1 text-sm text-muted"],
     statsGrid: ["mt-5 grid grid-cols-2 gap-3"],
+    pointsCard: [
+      "rounded-2xl border border-slate-900/10 bg-accent-soft/80 p-4 text-left",
+    ],
+    pointsTop: ["flex items-center justify-between gap-2"],
+    pointsIcon: [
+      "inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-accent-deep",
+    ],
     clanButton: [
       "w-full rounded-2xl border border-slate-900/10 bg-white/90 p-4 text-left transition",
       "hover:border-clan-teal/60 hover:bg-clan-teal/10",
     ],
     statLabel: ["block text-xs font-semibold uppercase tracking-[0.18em] text-muted"],
     statValue: ["mt-2 block text-3xl"],
+    pointsValue: ["mt-2 block text-3xl font-bold text-accent-deep"],
     clanValueRow: ["flex items-center gap-3"],
     memberBadge: [
       "mt-2 inline-flex items-center gap-1 rounded-full bg-clan-teal/10 px-3 py-1 text-sm font-semibold text-clan-teal",
@@ -141,9 +162,13 @@ const {
   title,
   login,
   statsGrid,
+  pointsCard,
+  pointsTop,
+  pointsIcon,
   clanButton,
   statLabel,
   statValue,
+  pointsValue,
   clanValueRow,
   memberBadge,
   memberIcon,

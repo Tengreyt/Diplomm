@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: keyboard-trainer-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keyboard_trainer
+      POSTGRES_USER: keyboard_trainer
+      POSTGRES_PASSWORD: keyboard_trainer
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keyboard_trainer -d keyboard_trainer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

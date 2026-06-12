@@ -5,22 +5,34 @@
 Стек:
 - `frontend` - Nuxt 4 + Vue 3 + Tailwind
 - `backend` - Node.js + Express
-- хранилище - файл `backend/data/users.json`
+- хранилище - PostgreSQL
 
 ## Быстрый старт
 
-### 1) Backend
+### 1) PostgreSQL
+
+Локально проще всего поднять БД через Docker:
+
+```bash
+docker compose up -d postgres
+```
+
+Если команда пишет `Cannot connect to the Docker daemon`, сначала запусти Docker Desktop и дождись статуса `Docker is running`, затем повтори команду.
+
+### 2) Backend
 
 ```bash
 cd backend
 npm install
+cp .env.example .env
+npm run db:migrate
 npm run dev
 ```
 
 Запуск в dev: `node --watch src/index.js`  
 По умолчанию API доступен на `http://localhost:4001/api`.
 
-### 2) Frontend
+### 3) Frontend
 
 ```bash
 cd frontend
@@ -37,6 +49,10 @@ npm run dev
 
 ### Backend
 - `PORT` - порт API (по умолчанию `4001`)
+- `DATABASE_URL` - строка подключения PostgreSQL
+- `SESSION_TTL_DAYS` - срок жизни bearer-сессии в днях (по умолчанию `30`)
+- `DB_SSL` - `true`, если managed PostgreSQL требует SSL
+- `CORS_ORIGIN` - список разрешенных frontend origin через запятую
 
 ### Frontend
 - `NUXT_PUBLIC_API_BASE` - базовый URL API  
@@ -48,10 +64,13 @@ npm run dev
 .
 ├── backend/
 │   ├── src/
-│   │   ├── index.js          # entrypoint backend, auth/lesson/profile/clans
-│   │   └── server.js         # маршрут сохранения результатов /api/results
-│   ├── data/
-│   │   └── users.json        # файловое хранилище пользователей
+│   │   ├── index.js          # entrypoint backend
+│   │   ├── app.js            # Express app, CORS, /health, /lesson, /me
+│   │   ├── controllers/      # auth, clans, results routes
+│   │   ├── db/               # PostgreSQL pool and migrations
+│   │   ├── services/         # userService: auth helpers, serialization, task progress
+│   │   ├── repo/             # PostgreSQL repositories
+│   │   └── server.js         # wrapper для result routes
 │   └── package.json
 ├── frontend/
 │   ├── app/
@@ -75,8 +94,11 @@ npm run dev
 │   │   └── utils/
 │   ├── nuxt.config.ts
 │   └── package.json
+├── AGENTS.md                  # инструкции для ИИ-агентов и новых участников
 └── README.md
 ```
+
+Для подробной карты архитектуры, правил правок и подсказок для ИИ-агентов см. `AGENTS.md`.
 
 ## API (кратко)
 
@@ -84,7 +106,7 @@ npm run dev
 
 ### Сервисные
 - `GET /health` - проверка доступности backend
-- `GET /lesson` - получить случайный тренировочный текст
+- `GET /lesson?level=beginner|intermediate|advanced` - получить случайный тренировочный текст выбранной сложности
 
 ### Авторизация и профиль
 - `POST /auth/register` - регистрация  
@@ -92,11 +114,12 @@ npm run dev
 - `POST /auth/login` - вход  
   body: `login`, `password`
 - `GET /me` - текущий пользователь (требует `Authorization: Bearer <token>`)
+- `GET /clans` - рейтинг кланов
 - `GET /clans/:emoji` - участники клана по эмоджи
 
 ### Результаты тренировки
 - `POST /results` - сохранить результат (требует Bearer токен)  
-  body: `wpm`, `accuracy`, `errors`, `seconds`
+  body: `wpm`, `accuracy`, `errors`, `seconds`; ответ обновляет пользователя, задачи и очки
 
 ## Архитектура и поток данных
 
@@ -105,32 +128,18 @@ npm run dev
 3. После входа `useTrainer.ts` запрашивает урок через `/lesson`.
 4. Во время печати считаются метрики (accuracy/WPM/errors/time).
 5. После завершения отправляется результат в `/results`.
-6. Backend обновляет `stats` пользователя и сохраняет в `users.json`.
+6. Backend обновляет `stats`, прогресс ежедневных/еженедельных задач и очки пользователя в PostgreSQL.
+7. Очки пользователя суммируются в рейтинге кланов и сортировке участников внутри клана.
+
+## Backend и деплой
+
+- Основное хранилище - PostgreSQL. Пользовательские данные не хранятся в файлах репозитория.
+- Таблицы создаются миграцией `npm run db:migrate`; при старте backend также проверяет и применяет схему.
+- Сессии хранятся в таблице `sessions` как SHA-256 hash bearer-токена, поэтому переживают перезапуск backend.
+- Новые пароли хешируются через `bcrypt`. Старые SHA-256 hash из JSON поддерживаются при импорте и автоматически обновляются после успешного логина.
+- Для production укажи реальные `DATABASE_URL`, `CORS_ORIGIN`, `DB_SSL` и секреты в переменных окружения платформы, а не в git.
 
 ## Ограничения текущей реализации
 
-- Хранилище - JSON-файл, без БД и миграций.
-- Сессии хранятся в памяти процесса backend (`Map`), после перезапуска недействительны.
-- Пароли хешируются через SHA-256 (без соли), решение учебное, не production-ready.
 - Тестов и CI в репозитории сейчас нет.
-
-## Для ИИ и новых участников (экономия токенов)
-
-### Что читать в первую очередь
-1. `README.md` (этот файл)
-2. `backend/src/index.js`
-3. `backend/src/server.js`
-4. `frontend/app/pages/index.vue`
-5. `frontend/app/composables/useAuth.ts`
-6. `frontend/app/composables/useTrainer.ts`
-7. `frontend/app/types/auth.ts` и `frontend/app/types/trainer.ts`
-
-### Что обычно не нужно читать для задач по логике
-- `frontend/.nuxt/**` (генерируется Nuxt)
-- `frontend/.output/**` (build output)
-- `frontend/node_modules/**`
-
-### Перед любыми правками
-- Проверить, что backend и frontend запускаются локально.
-- Учитывать, что рабочее дерево может быть грязным (есть незакоммиченные изменения).
-- Не менять сгенерированные каталоги (`.nuxt`, `.output`) вручную.
+- Таблицы создаются простым SQL-migrate без отдельного migration framework.

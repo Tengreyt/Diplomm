@@ -54,6 +54,7 @@
             <div>
               <strong :class="nickname()">{{ member.nickname }}</strong>
               <p :class="login()">@{{ member.login }}</p>
+              <p :class="memberMeta()">{{ formatCompactCount(member.points) }} оч. · {{ member.testsCompleted }} трен.</p>
             </div>
           </div>
         </div>
@@ -108,6 +109,7 @@ const styles = tv({
     avatar: ["h-14 w-14 rounded-[5px] object-cover"],
     nickname: ["block text-base font-semibold text-ink"],
     login: ["mt-1 text-sm text-muted"],
+    memberMeta: ["mt-1 text-xs font-semibold text-clan-teal"],
     stateText: ["rounded-2xl bg-slate-100 p-4 text-sm text-muted"],
   },
 });
@@ -127,6 +129,7 @@ const {
   avatar,
   nickname,
   login,
+  memberMeta,
   stateText,
 } = styles();
 </script>

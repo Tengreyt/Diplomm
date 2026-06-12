@@ -1,6 +1,9 @@
-﻿export type LessonResponse = {
+﻿export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
+export type LessonResponse = {
   id: number;
-  level: string;
+  level: DifficultyLevel;
+  levelLabel: string;
   text: string;
 };
 
@@ -11,4 +14,24 @@ export type TrainerStats = {
   errors: number;
   wpm: number;
   seconds: number;
+};
+
+export type SaveResultResponse = {
+  user: import("~/types/auth").UserProfile;
+  result: {
+    wpm: number;
+    accuracy: number;
+    errors: number;
+    seconds: number;
+    createdAt: string;
+  };
+  tasks: {
+    earnedPoints: number;
+    completedTasks: Array<{
+      id: string;
+      period: import("~/types/auth").TaskPeriod;
+      title: string;
+      points: number;
+    }>;
+  };
 };

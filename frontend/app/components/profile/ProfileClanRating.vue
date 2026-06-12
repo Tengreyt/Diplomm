@@ -3,8 +3,8 @@
     <div :class="topbar()">
       <BackButton @click="emit('back')" />
       <div>
-        <p :class="kicker()">Кланы</p>
-        <h2 :class="title()">Рейтинг кланов</h2>
+        <p :class="kicker()">Клан против клана</p>
+        <h2 :class="title()">Соревнование</h2>
       </div>
     </div>
 
@@ -32,7 +32,7 @@
 
           <div>
             <p :class="membersLabel()">Участников: {{ formatCompactCount(clan.members) }}</p>
-            <p :class="pointsLabel()">Очки: {{ clan.points }}</p>
+            <p :class="pointsLabel()">Сумма очков: {{ formatCompactCount(clan.points) }}</p>
           </div>
         </button>
       </template>
