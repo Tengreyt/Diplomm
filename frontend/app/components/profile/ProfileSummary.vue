@@ -18,7 +18,7 @@
         title="Настройки"
         @click="emit('openSettings')"
       >
-        <IconSettings :class="settingsIcon()" />
+        <Settings :class="settingsIcon()" aria-hidden="true" />
       </button>
     </div>
 
@@ -27,14 +27,7 @@
         <div :class="pointsTop()">
           <span :class="statLabel()">Очки</span>
           <span :class="pointsIcon()" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5">
-              <path
-                d="M12 3L14.4 8.4L20 9.1L15.8 13L16.9 18.6L12 15.8L7.1 18.6L8.2 13L4 9.1L9.6 8.4L12 3Z"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <Star class="h-5 w-5" />
           </span>
         </div>
         <strong :class="pointsValue()">{{ formatCompactCount(user.stats.points) }}</strong>
@@ -97,8 +90,8 @@
 </template>
 
 <script setup lang="ts">
+import { Settings, Star } from "@lucide/vue";
 import type { UserProfile } from "~/types/auth";
-import IconSettings from "~/components/icons/IconSettings.vue";
 import ProfileTasks from "~/components/profile/ProfileTasks.vue";
 import { formatCompactCount } from "~/utils/format";
 import { tv } from "tailwind-variants";

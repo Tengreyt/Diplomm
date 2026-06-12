@@ -8,20 +8,10 @@
       @click="toggle"
     >
       <span>{{ selectedOption.label }}</span>
-      <svg
+      <ChevronDown
         :class="chevron({ open: isOpen })"
-        viewBox="0 0 20 20"
-        fill="none"
         aria-hidden="true"
-      >
-        <path
-          d="M5 7.5L10 12.5L15 7.5"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      />
     </button>
 
     <Transition name="fade">
@@ -49,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { ChevronDown } from "@lucide/vue";
 import { tv } from "tailwind-variants";
 import { difficultyOptions } from "~/constants/trainer";
 import type { DifficultyLevel } from "~/types/trainer";

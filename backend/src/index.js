@@ -1,7 +1,19 @@
 import { app } from './app.js';
+import { formatDatabaseError } from './db/errorMessage.js';
+import { migrateDatabase } from './db/migrate.js';
+import sessionsRepo from './repo/sessionsRepo.js';
 
 const port = process.env.PORT || 4001;
 
-app.listen(port, () => {
-  console.log(`Backend started on http://localhost:${port}`);
-});
+migrateDatabase()
+  .then(async () => {
+    await sessionsRepo.deleteExpiredSessions();
+
+    app.listen(port, () => {
+      console.log(`Backend started on http://localhost:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Backend startup failed:\n%s', formatDatabaseError(error));
+    process.exitCode = 1;
+  });

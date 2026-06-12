@@ -3,6 +3,9 @@ backend/node_modules/
 frontend/.nuxt/
 frontend/.output/
 frontend/.data/
+.env
+backend/.env
+frontend/.env
 backend/*.log
 frontend/*.log
 *.log

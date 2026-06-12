@@ -1,24 +1,22 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-import userService from './services/userService.js';
 import crypto from 'crypto';
 
+import sessionsRepo from './repo/sessionsRepo.js';
+import userService from './services/userService.js';
 import { registerAuthRoutes } from './controllers/authController.js';
 import { registerClanRoutes } from './controllers/clansController.js';
 import { registerResultController } from './controllers/resultsController.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 export const app = express();
 export const port = process.env.PORT || 4001;
 
-const sessions = new Map();
+const corsOrigin = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : true;
 
-app.use(cors());
+app.set('trust proxy', 1);
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
 
 export const lessons = [
@@ -32,16 +30,40 @@ export const lessons = [
 
 export const avatarPresets = userService.avatarPresets;
 
-export function createSession(userId) {
-  const token = Buffer.from(cryptoRandom(24)).toString('hex');
-  sessions.set(token, { token, userId, createdAt: Date.now() });
+function createTokenHash(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+export async function createSession(userId) {
+  const token = cryptoRandom(32).toString('hex');
+  await sessionsRepo.createSessionRecord({
+    tokenHash: createTokenHash(token),
+    userId
+  });
   return token;
 }
 
-export function getSession(request) {
+export async function getSession(request) {
   const header = request.headers.authorization ?? '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
-  return token ? sessions.get(token) : null;
+
+  if (!token) {
+    return null;
+  }
+
+  const session = await sessionsRepo.findSessionByTokenHash(createTokenHash(token));
+
+  if (!session) {
+    return null;
+  }
+
+  return {
+    token,
+    tokenHash: session.tokenHash,
+    userId: session.userId,
+    createdAt: session.createdAt,
+    expiresAt: session.expiresAt
+  };
 }
 
 function cryptoRandom(bytes = 24) {
@@ -64,16 +86,24 @@ app.get('/api/lesson', (req, res) => {
   res.json(lesson);
 });
 
-app.get('/api/me', (req, res) => {
-  const session = getSession(req);
-  if (!session) return res.status(401).json({ message: 'Сессия не найдена.' });
+app.get('/api/me', async (req, res, next) => {
+  try {
+    const session = await getSession(req);
+    if (!session) return res.status(401).json({ message: 'Сессия не найдена.' });
 
-  const users = userService.readUsers();
-  const user = users.find((u) => u.id === session.userId);
-  if (!user) {
-    sessions.delete(session.token);
-    return res.status(401).json({ message: 'Пользователь не найден.' });
+    const user = await userService.findUserById(session.userId);
+    if (!user) {
+      await sessionsRepo.deleteSession(session.tokenHash);
+      return res.status(401).json({ message: 'Пользователь не найден.' });
+    }
+
+    res.json({ user: await userService.serializeUser(user) });
+  } catch (error) {
+    next(error);
   }
+});
 
-  res.json({ user: userService.serializeUser(user, users) });
+app.use((error, _req, res, _next) => {
+  console.error(error);
+  res.status(500).json({ message: 'Внутренняя ошибка сервера.' });
 });

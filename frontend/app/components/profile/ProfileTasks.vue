@@ -8,14 +8,7 @@
     >
       <div :class="heading()">
         <span :class="tasksIcon()" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5">
-            <path
-              d="M8 6H20M8 12H20M8 18H20M4 6H4.01M4 12H4.01M4 18H4.01"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          </svg>
+          <ListChecks class="h-5 w-5" />
         </span>
         <span>
           <span :class="kicker()">Задачи</span>
@@ -25,20 +18,10 @@
 
       <span :class="headerRight()">
         <strong :class="pointsBadge()">{{ points }} оч.</strong>
-        <svg
+        <ChevronDown
           :class="chevron({ open: isExpanded })"
-          viewBox="0 0 20 20"
-          fill="none"
           aria-hidden="true"
-        >
-          <path
-            d="M5 7.5L10 12.5L15 7.5"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        />
       </span>
     </button>
 
@@ -94,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { ChevronDown, ListChecks } from "@lucide/vue";
 import { tv } from "tailwind-variants";
 import type { UserTask } from "~/types/auth";
 

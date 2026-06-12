@@ -10,16 +10,19 @@
 
 - Frontend: Nuxt 4, Vue 3, TypeScript, Tailwind CSS, `tailwind-variants`.
 - Backend: Node.js, Express, ES modules.
-- Хранилище: JSON-файл `backend/data/users.json`.
-- Авторизация: Bearer-токены в памяти backend-процесса (`Map`) + токен в `localStorage` на клиенте.
+- Хранилище: PostgreSQL через `pg`.
+- Авторизация: Bearer-токены в PostgreSQL-таблице `sessions` + токен в `localStorage` на клиенте.
 
 ## Быстрый запуск
 
 Backend:
 
 ```bash
+docker compose up -d postgres
 cd backend
 npm install
+cp .env.example .env
+npm run db:migrate
 npm run dev
 ```
 
@@ -44,19 +47,23 @@ npm run build
 ## Архитектура backend
 
 - `backend/src/index.js` - точка запуска, импортирует `app` и слушает порт.
-- `backend/src/app.js` - создает Express-приложение, подключает middleware, in-memory sessions, публичные `/api/health`, `/api/lesson`, защищенный `/api/me`, регистрирует контроллеры.
+- `backend/src/app.js` - создает Express-приложение, подключает middleware/CORS, публичные `/api/health`, `/api/lesson`, защищенный `/api/me`, регистрирует контроллеры.
+- `backend/src/db/pool.js` - PostgreSQL pool, `DATABASE_URL`, SSL-настройка.
+- `backend/src/db/migrate.js` - SQL-схема `users` и `sessions`.
 - `backend/src/controllers/authController.js` - `/api/auth/register`, `/api/auth/login`.
 - `backend/src/controllers/resultsController.js` - `/api/results`, обновляет статистику и `lastResult`.
 - `backend/src/controllers/clansController.js` - `/api/clans`, `/api/clans/:emoji`.
-- `backend/src/services/userService.js` - сериализация пользователя, SHA-256 хеш пароля, расчет очков клана, avatar presets.
-- `backend/src/repo/usersRepo.js` - чтение/запись `backend/data/users.json`.
+- `backend/src/services/userService.js` - сериализация пользователя, bcrypt/SHA-256 legacy-проверка пароля, расчет очков клана, avatar presets.
+- `backend/src/repo/usersRepo.js` - PostgreSQL-запросы пользователей, статистики, кланов.
+- `backend/src/repo/sessionsRepo.js` - хранение hash bearer-токенов и сроков жизни сессий.
 - `backend/src/server.js` - совместимый wrapper для регистрации result routes; основной запуск идет через `index.js`.
 
 Важные ограничения backend:
 
-- `users.json` пишется целиком и синхронно, без блокировок и миграций.
-- Сессии живут только в памяти процесса и пропадают после перезапуска.
-- Пароли хешируются SHA-256 без соли; это учебная реализация, не production security.
+- Пользовательские данные хранятся в PostgreSQL, а не в JSON-файлах репозитория.
+- Новые пароли хешируются bcrypt. SHA-256 нужен только для совместимости со старыми импортированными пользователями.
+- Сессии хранятся как SHA-256 hash токена в PostgreSQL и имеют TTL.
+- Перед изменением схемы обновляй `backend/src/db/migrate.js`, репозиторий и README.
 - `serializeUser` не должен отдавать `passwordHash`.
 
 ## Архитектура frontend
@@ -95,30 +102,34 @@ npm run build
 
 - Не трогай `frontend/.nuxt`, `frontend/.output`, `node_modules` и другие сгенерированные каталоги.
 - Учитывай, что рабочее дерево может быть грязным. Не откатывай чужие изменения.
-- Не редактируй `backend/data/users.json` без явной причины: это рабочее файловое хранилище с пользовательскими данными.
+- Не добавляй файловое хранилище пользователей обратно: основной источник данных - PostgreSQL.
 - Перед крупными изменениями сначала прочитай ближайшие composable/controller/type файлы, а не только компонент.
 - Для UI держись существующего стиля: Tailwind + `tailwind-variants`, Vue `<script setup lang="ts">`, русские тексты интерфейса.
-- Для backend держись ES modules, Express controllers и `userService`/`usersRepo` вместо новой инфраструктуры.
-- Не добавляй базу данных, JWT, Pinia, UI-kit или новый state manager без отдельного решения.
+- Для backend держись ES modules, Express controllers, `userService`, PostgreSQL repo-слоя и миграции в `backend/src/db/migrate.js`.
+- Не добавляй JWT, ORM, Pinia, UI-kit или новый state manager без отдельного решения.
 
 ## Что читать первым
 
 1. `README.md`
 2. `AGENTS.md`
 3. `backend/src/app.js`
-4. `backend/src/controllers/*.js`
-5. `backend/src/services/userService.js`
-6. `frontend/app/pages/index.vue`
-7. `frontend/app/composables/useAuth.ts`
-8. `frontend/app/composables/useTrainer.ts`
-9. `frontend/app/types/auth.ts`
-10. `frontend/app/types/trainer.ts`
+4. `backend/src/db/migrate.js`
+5. `backend/src/repo/usersRepo.js`
+6. `backend/src/controllers/*.js`
+7. `backend/src/services/userService.js`
+8. `frontend/app/pages/index.vue`
+9. `frontend/app/composables/useAuth.ts`
+10. `frontend/app/composables/useTrainer.ts`
+11. `frontend/app/types/auth.ts`
+12. `frontend/app/types/trainer.ts`
 
 ## Частые сценарии
 
 Добавить поле пользователя:
 
-- обновить создание пользователя в `authController.js`;
+- обновить схему в `backend/src/db/migrate.js`;
+- обновить создание/чтение пользователя в `usersRepo.js`;
+- обновить создание пользователя в `authController.js`, если поле приходит из формы;
 - обновить `serializeUser` в `userService.js`;
 - обновить `UserProfile`/формы в `frontend/app/types/auth.ts`;
 - обновить нужные компоненты профиля или авторизации.

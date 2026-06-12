@@ -6,7 +6,7 @@
         <p :class="kicker()">Профиль</p>
         <div :class="titleRow()">
           <h2 :class="title()">Настройки</h2>
-          <IconSettings :class="titleIcon()" />
+          <Settings :class="titleIcon()" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -29,9 +29,9 @@
 </template>
 
 <script setup lang="ts">
+import { Settings } from "@lucide/vue";
 import type { UserProfile } from "~/types/auth";
 import BackButton from "~/components/ui/BackButton.vue";
-import IconSettings from "~/components/icons/IconSettings.vue";
 import { tv } from "tailwind-variants";
 
 defineProps<{

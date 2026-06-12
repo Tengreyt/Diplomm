@@ -5,22 +5,34 @@
 Стек:
 - `frontend` - Nuxt 4 + Vue 3 + Tailwind
 - `backend` - Node.js + Express
-- хранилище - файл `backend/data/users.json`
+- хранилище - PostgreSQL
 
 ## Быстрый старт
 
-### 1) Backend
+### 1) PostgreSQL
+
+Локально проще всего поднять БД через Docker:
+
+```bash
+docker compose up -d postgres
+```
+
+Если команда пишет `Cannot connect to the Docker daemon`, сначала запусти Docker Desktop и дождись статуса `Docker is running`, затем повтори команду.
+
+### 2) Backend
 
 ```bash
 cd backend
 npm install
+cp .env.example .env
+npm run db:migrate
 npm run dev
 ```
 
 Запуск в dev: `node --watch src/index.js`  
 По умолчанию API доступен на `http://localhost:4001/api`.
 
-### 2) Frontend
+### 3) Frontend
 
 ```bash
 cd frontend
@@ -37,6 +49,10 @@ npm run dev
 
 ### Backend
 - `PORT` - порт API (по умолчанию `4001`)
+- `DATABASE_URL` - строка подключения PostgreSQL
+- `SESSION_TTL_DAYS` - срок жизни bearer-сессии в днях (по умолчанию `30`)
+- `DB_SSL` - `true`, если managed PostgreSQL требует SSL
+- `CORS_ORIGIN` - список разрешенных frontend origin через запятую
 
 ### Frontend
 - `NUXT_PUBLIC_API_BASE` - базовый URL API  
@@ -49,13 +65,12 @@ npm run dev
 ├── backend/
 │   ├── src/
 │   │   ├── index.js          # entrypoint backend
-│   │   ├── app.js            # Express app, sessions, /health, /lesson, /me
+│   │   ├── app.js            # Express app, CORS, /health, /lesson, /me
 │   │   ├── controllers/      # auth, clans, results routes
-│   │   ├── services/         # userService: auth helpers, serialization, clan points
-│   │   ├── repo/             # usersRepo: JSON storage
+│   │   ├── db/               # PostgreSQL pool and migrations
+│   │   ├── services/         # userService: auth helpers, serialization, task progress
+│   │   ├── repo/             # PostgreSQL repositories
 │   │   └── server.js         # wrapper для result routes
-│   ├── data/
-│   │   └── users.json        # файловое хранилище пользователей
 │   └── package.json
 ├── frontend/
 │   ├── app/
@@ -113,12 +128,18 @@ npm run dev
 3. После входа `useTrainer.ts` запрашивает урок через `/lesson`.
 4. Во время печати считаются метрики (accuracy/WPM/errors/time).
 5. После завершения отправляется результат в `/results`.
-6. Backend обновляет `stats`, прогресс ежедневных/еженедельных задач и очки пользователя.
+6. Backend обновляет `stats`, прогресс ежедневных/еженедельных задач и очки пользователя в PostgreSQL.
 7. Очки пользователя суммируются в рейтинге кланов и сортировке участников внутри клана.
+
+## Backend и деплой
+
+- Основное хранилище - PostgreSQL. Пользовательские данные не хранятся в файлах репозитория.
+- Таблицы создаются миграцией `npm run db:migrate`; при старте backend также проверяет и применяет схему.
+- Сессии хранятся в таблице `sessions` как SHA-256 hash bearer-токена, поэтому переживают перезапуск backend.
+- Новые пароли хешируются через `bcrypt`. Старые SHA-256 hash из JSON поддерживаются при импорте и автоматически обновляются после успешного логина.
+- Для production укажи реальные `DATABASE_URL`, `CORS_ORIGIN`, `DB_SSL` и секреты в переменных окружения платформы, а не в git.
 
 ## Ограничения текущей реализации
 
-- Хранилище - JSON-файл, без БД и миграций.
-- Сессии хранятся в памяти процесса backend (`Map`), после перезапуска недействительны.
-- Пароли хешируются через SHA-256 (без соли), решение учебное, не production-ready.
 - Тестов и CI в репозитории сейчас нет.
+- Таблицы создаются простым SQL-migrate без отдельного migration framework.
