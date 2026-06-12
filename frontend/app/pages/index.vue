@@ -1,23 +1,6 @@
 <template>
   <main :class="root()">
-    <BrandHero />
-
-    <section v-if="!currentUser" :class="guestGrid()">
-      <AuthPanel
-        :auth-mode="authMode"
-        :is-pending="isPending"
-        :auth-message="authMessage"
-        :register-form="registerForm"
-        :login-form="loginForm"
-        :clan-pitch="clanPitch"
-        @switch-mode="switchMode"
-        @select-avatar="selectAvatar"
-        @choose-emoji="chooseEmoji"
-        @register="handleRegister"
-        @login="handleLogin"
-      />
-      <HomePitchCard />
-    </section>
+    <HomeVideoHero v-if="!currentUser" />
 
     <section v-else :class="appGrid()">
       <ProfilePanel :user="currentUser" @logout="handleLogout" />
@@ -28,6 +11,7 @@
         :typed-text="typedText"
         :stats="stats"
         :result-message="resultMessage"
+        :coach="aiCoach"
         @update:difficulty="selectDifficulty"
         @update:typed-text="updateTypedText"
         @refresh-lesson="fetchLesson"
@@ -40,18 +24,7 @@
 import { tv } from "tailwind-variants";
 
 const {
-  authMode,
-  isPending,
-  authMessage,
   currentUser,
-  registerForm,
-  loginForm,
-  clanPitch,
-  switchMode,
-  selectAvatar,
-  chooseEmoji,
-  registerUser,
-  loginUser,
   restoreSession,
   logout
 } = useAuth();
@@ -62,6 +35,7 @@ const {
   selectedDifficulty,
   typedText,
   stats,
+  aiCoach,
   resultMessage,
   fetchLesson,
   selectDifficulty,
@@ -73,14 +47,6 @@ onMounted(async () => {
   await restoreSession(fetchLesson);
 });
 
-const handleRegister = async () => {
-  await registerUser(fetchLesson);
-};
-
-const handleLogin = async () => {
-  await loginUser(fetchLesson);
-};
-
 const handleLogout = () => {
   logout();
   resetTrainer();
@@ -89,10 +55,12 @@ const handleLogout = () => {
 const styles = tv({
   slots: {
     root: ["page-shell"],
-    guestGrid: ["grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]"],
     appGrid: ["grid items-stretch gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.4fr)]"],
   },
 });
 
-const { root, guestGrid, appGrid } = styles();
+const {
+  root,
+  appGrid,
+} = styles();
 </script>

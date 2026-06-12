@@ -162,9 +162,9 @@ const emit = defineEmits<{
 const styles = tv({
   slots: {
     root: [
-      "rounded-panel border border-slate-900/10 bg-white/90 p-6 shadow-soft backdrop-blur-xl md:p-7",
+      "glass-panel rounded-panel p-6 md:p-7",
     ],
-    segmentGroup: ["inline-grid grid-cols-2 gap-1 rounded-2xl bg-slate-100/80 p-1"],
+    segmentGroup: ["glass-control inline-grid grid-cols-2 gap-1 rounded-2xl p-1"],
     segmentButton: ["rounded-xl px-4 py-2 text-sm font-semibold transition"],
     form: ["mt-6 grid gap-5"],
     field: ["grid gap-2"],
@@ -172,17 +172,16 @@ const styles = tv({
     section: ["grid gap-3"],
     grid4: ["grid grid-cols-4 gap-3"],
     emojiChip: ["flex min-h-14 items-center justify-center rounded-2xl border text-2xl transition"],
-    avatarTile: ["rounded-2xl border bg-white p-2 transition"],
+    avatarTile: ["glass-control rounded-2xl p-2 transition"],
     hintText: ["text-sm leading-6 text-muted"],
     avatarHelp: ["text-xs leading-5 text-muted"],
     inputField: [
-      "w-full rounded-2xl border border-slate-300/70 bg-white/90 px-4 py-3 text-sm text-ink outline-none",
-      "transition focus:border-slate-900/80 focus:ring-2 focus:ring-slate-200",
-      "disabled:opacity-100 disabled:bg-white disabled:cursor-default"
+      "glass-input w-full rounded-2xl px-4 py-3 text-sm text-ink outline-none",
+      "transition focus:border-slate-900/80 focus:ring-2 focus:ring-white/70",
+      "disabled:cursor-default disabled:bg-white/50 disabled:opacity-100"
     ],
     actionButton: [
-      "w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800",
-      "shadow-soft"
+      "liquid-button w-full rounded-2xl px-4 py-3 text-sm font-semibold"
     ],
     messageWarning: [
       "rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
@@ -194,12 +193,12 @@ const styles = tv({
       true: {
         segmentButton: "bg-accent text-slate-950 shadow-sm",
         emojiChip: "border-accent bg-accent-soft shadow-sm",
-        avatarTile: "border-accent bg-accent-soft shadow-sm",
+        avatarTile: "border-accent bg-accent-soft/70 shadow-sm",
       },
       false: {
         segmentButton: "text-muted hover:text-ink",
-        emojiChip: "border-slate-900/10 bg-white hover:-translate-y-0.5",
-        avatarTile: "border-slate-900/10 hover:-translate-y-0.5",
+        emojiChip: "border-white/60 bg-white/40 hover:-translate-y-0.5",
+        avatarTile: "hover:-translate-y-0.5",
       },
     },
   },

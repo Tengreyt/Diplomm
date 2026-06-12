@@ -5,11 +5,14 @@ import type {
   SaveResultResponse,
   TrainerStats
 } from "~/types/trainer";
+import type { AiCoach } from "~/types/coach";
 import type { UserProfile } from "~/types/auth";
 
 const waitingLessonText = "После входа здесь появится текст тренировки.";
 const offlineLessonText =
   "Не удалось получить текст тренировки. Проверь backend на порту 4001.";
+
+let trainerTimerId: ReturnType<typeof setInterval> | null = null;
 
 export const useTrainer = () => {
   const config = useRuntimeConfig();
@@ -22,9 +25,9 @@ export const useTrainer = () => {
   const elapsedSeconds = useState("trainer-elapsed-seconds", () => 0);
   const isResultSaved = useState("trainer-result-saved", () => false);
   const resultMessage = useState("trainer-result-message", () => "");
+  const aiCoach = useState<AiCoach | null>("trainer-ai-coach", () => null);
+  const profileCoach = useState<AiCoach | null>("profile-ai-coach", () => null);
   const currentUser = useState<UserProfile | null>("auth-user", () => null);
-
-  let timerId: ReturnType<typeof setInterval> | null = null;
 
   const updateElapsedSeconds = () => {
     if (!startedAt.value) {
@@ -46,17 +49,17 @@ export const useTrainer = () => {
     startedAt.value = Date.now();
     elapsedSeconds.value = 1;
 
-    if (import.meta.client) {
-      timerId = setInterval(updateElapsedSeconds, 1000);
+    if (import.meta.client && !trainerTimerId) {
+      trainerTimerId = setInterval(updateElapsedSeconds, 1000);
     }
   };
 
   const stopTimer = () => {
     updateElapsedSeconds();
 
-    if (timerId) {
-      clearInterval(timerId);
-      timerId = null;
+    if (trainerTimerId) {
+      clearInterval(trainerTimerId);
+      trainerTimerId = null;
     }
   };
 
@@ -93,7 +96,23 @@ export const useTrainer = () => {
     };
   });
 
+  const resetAttemptState = () => {
+    typedText.value = "";
+    startedAt.value = null;
+    elapsedSeconds.value = 0;
+    isResultSaved.value = false;
+    resultMessage.value = "";
+    stopTimer();
+  };
+
   const fetchLesson = async () => {
+    if (aiCoach.value?.task.targetText) {
+      lessonText.value = aiCoach.value.task.targetText;
+      lessonLevel.value = "AI-задание";
+      resetAttemptState();
+      return;
+    }
+
     try {
       const response = await $fetch<LessonResponse>(
         `${config.public.apiBase}/lesson`,
@@ -106,26 +125,24 @@ export const useTrainer = () => {
 
       lessonText.value = response.text;
       lessonLevel.value = response.levelLabel;
-      typedText.value = "";
-      startedAt.value = null;
-      elapsedSeconds.value = 0;
-      isResultSaved.value = false;
-      resultMessage.value = "";
-      stopTimer();
+      resetAttemptState();
     } catch {
       lessonText.value = offlineLessonText;
       lessonLevel.value = "offline";
-      typedText.value = "";
-      startedAt.value = null;
-      elapsedSeconds.value = 0;
-      isResultSaved.value = false;
-      resultMessage.value = "";
-      stopTimer();
+      resetAttemptState();
     }
+  };
+
+  const startCoachLesson = (coach: AiCoach) => {
+    aiCoach.value = coach;
+    lessonText.value = coach.task.targetText;
+    lessonLevel.value = "AI-задание";
+    resetAttemptState();
   };
 
   const selectDifficulty = async (difficulty: DifficultyLevel) => {
     selectedDifficulty.value = difficulty;
+    aiCoach.value = null;
     await fetchLesson();
   };
 
@@ -150,10 +167,15 @@ export const useTrainer = () => {
         accuracy: stats.value.accuracy,
         errors: stats.value.errors,
         seconds: stats.value.seconds,
+        lessonText: lessonText.value,
+        typedText: typedText.value,
+        difficulty: selectedDifficulty.value,
       },
     });
 
     currentUser.value = response.user;
+    aiCoach.value = response.coach ?? null;
+    profileCoach.value = response.coach ?? profileCoach.value;
     resultMessage.value = response.tasks.earnedPoints > 0
       ? `Получено очков: ${response.tasks.earnedPoints}`
       : "Результат сохранен.";
@@ -189,6 +211,7 @@ export const useTrainer = () => {
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
     resultMessage.value = "";
+    aiCoach.value = null;
     stopTimer();
   };
 
@@ -202,6 +225,8 @@ export const useTrainer = () => {
     selectedDifficulty,
     typedText,
     stats,
+    aiCoach,
+    startCoachLesson,
     fetchLesson,
     selectDifficulty,
     saveResult,

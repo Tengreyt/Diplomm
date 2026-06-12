@@ -64,7 +64,7 @@ const styles = tv({
     title: ["mt-2 text-3xl font-semibold text-ink"],
     list: ["mt-5 grid gap-3"],
     row: [
-      "grid w-full grid-cols-[40px_52px_1fr] items-center gap-3 rounded-2xl border border-slate-900/10 bg-white/90 p-3 text-left transition",
+      "glass-card grid w-full grid-cols-[40px_52px_1fr] items-center gap-3 rounded-2xl p-3 text-left transition",
       "hover:border-clan-teal/60 hover:bg-clan-teal/10",
     ],
     rank: ["text-center text-base font-semibold text-ink"],
@@ -73,7 +73,7 @@ const styles = tv({
     ],
     membersLabel: ["text-sm font-semibold text-ink"],
     pointsLabel: ["mt-1 text-sm text-clan-teal"],
-    stateText: ["rounded-2xl bg-slate-100 p-4 text-sm text-muted"],
+    stateText: ["glass-card rounded-2xl p-4 text-sm text-muted"],
   },
 });
 

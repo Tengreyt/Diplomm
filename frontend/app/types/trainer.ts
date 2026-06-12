@@ -1,4 +1,6 @@
-﻿export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+﻿import type { AiCoach } from "~/types/coach";
+
+export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 export type LessonResponse = {
   id: number;
@@ -34,4 +36,5 @@ export type SaveResultResponse = {
       points: number;
     }>;
   };
+  coach?: AiCoach;
 };

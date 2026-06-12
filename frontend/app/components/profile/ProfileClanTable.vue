@@ -104,13 +104,13 @@ const styles = tv({
     memberIcon: ["text-base leading-none"],
     list: ["mt-5 grid gap-3"],
     memberRow: [
-      "grid grid-cols-[40px_1fr] items-center gap-3 rounded-2xl border border-slate-900/10 bg-white/90 p-3",
+      "glass-card grid grid-cols-[40px_1fr] items-center gap-3 rounded-2xl p-3",
     ],
     avatar: ["h-14 w-14 rounded-[5px] object-cover"],
     nickname: ["block text-base font-semibold text-ink"],
     login: ["mt-1 text-sm text-muted"],
     memberMeta: ["mt-1 text-xs font-semibold text-clan-teal"],
-    stateText: ["rounded-2xl bg-slate-100 p-4 text-sm text-muted"],
+    stateText: ["glass-card rounded-2xl p-4 text-sm text-muted"],
   },
 });
 

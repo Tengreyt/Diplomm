@@ -42,7 +42,7 @@ const props = defineProps<{
 const styles = tv({
   slots: {
     statsGrid: ['mt-6 grid gap-3 md:grid-cols-5'],
-    statCard: ['rounded-2xl border border-slate-900/10 bg-white/90 p-4'],
+    statCard: ['glass-card rounded-2xl p-4'],
     statLabel: ['block text-xs font-semibold uppercase tracking-[0.18em] text-muted'],
     statValue: ['mt-2 block text-3xl'],
     statValueWpm: ['text-3xl font-mono tabular-nums leading-none'],

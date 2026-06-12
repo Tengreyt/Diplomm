@@ -34,8 +34,8 @@ const styles = tv({
   ],
   variants: {
     variant: {
-      primary: "bg-slate-900 text-white shadow-soft hover:bg-slate-800",
-      ghost: "border border-slate-900/10 bg-white/80 text-ink hover:bg-slate-100",
+      primary: "liquid-button",
+      ghost: "glass-control text-ink hover:bg-white/60",
       danger: "bg-red-500 text-white hover:bg-red-600",
       link: "bg-transparent text-accent underline-offset-2 hover:underline"
     },

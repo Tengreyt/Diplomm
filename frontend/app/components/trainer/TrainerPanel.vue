@@ -40,6 +40,7 @@
         :errors="props.stats.errors"
         :seconds="props.stats.seconds"
         :message="props.resultMessage"
+        :coach="props.coach"
         @retry="emit('refreshLesson')"
       />
     </Transition>
@@ -48,6 +49,7 @@
 
 <script setup lang="ts">
 import type { DifficultyLevel, TrainerStats } from "~/types/trainer";
+import type { AiCoach } from "~/types/coach";
 import { tv } from "tailwind-variants";
 import { computed } from "vue";
 import DifficultySelector from "~/components/trainer/DifficultySelector.vue";
@@ -61,6 +63,7 @@ const props = defineProps<{
   typedText: string;
   stats: TrainerStats;
   resultMessage: string;
+  coach: AiCoach | null;
 }>();
 
 const emit = defineEmits<{
@@ -83,7 +86,7 @@ const formattedTime = computed(() => {
 const styles = tv({
   slots: {
     root: [
-      "min-h-[560px] rounded-panel border border-slate-900/10 bg-white/80 p-6 shadow-soft backdrop-blur-xl md:p-7 flex flex-col",
+      "glass-panel flex min-h-[calc(100svh-1.25rem)] flex-col rounded-panel p-6 md:p-7",
     ],
     header: ["flex flex-col justify-between gap-4 md:flex-row md:items-start"],
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
@@ -93,7 +96,7 @@ const styles = tv({
     sectionLabel: ["block text-sm font-semibold leading-5 text-muted"],
     progressText: ["text-sm font-semibold text-muted"],
     actionButton: [
-      "rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800",
+      "liquid-button rounded-2xl px-4 py-3 text-sm font-semibold",
     ],
     buttonRow: ["flex justify-end"],
   },

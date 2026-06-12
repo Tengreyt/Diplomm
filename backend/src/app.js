@@ -7,6 +7,7 @@ import userService from './services/userService.js';
 import { registerAuthRoutes } from './controllers/authController.js';
 import { registerClanRoutes } from './controllers/clansController.js';
 import { registerResultController } from './controllers/resultsController.js';
+import { registerAiCoachRoutes } from './controllers/aiCoachController.js';
 
 export const app = express();
 export const port = process.env.PORT || 4001;
@@ -74,6 +75,7 @@ function cryptoRandom(bytes = 24) {
 registerAuthRoutes(app, createSession);
 registerClanRoutes(app);
 registerResultController({ app, getSession });
+registerAiCoachRoutes({ app, getSession });
 
 // misc public endpoints used by frontend
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'keyboard-trainer-backend' }));

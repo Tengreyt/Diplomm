@@ -112,8 +112,8 @@ const getCharacterText = (index: number, expectedCharacter: string) => {
 const styles = tv({
   slots: {
     typingCard: [
-      "min-h-[300px] rounded-2xl border border-slate-900/10 bg-white/90 p-5 text-xl font-semibold leading-[1.9] text-slate-400 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] transition",
-      "focus:border-accent-deep focus:bg-white focus:ring-4 focus:ring-accent-deep/15",
+      "glass-input min-h-[300px] rounded-2xl p-5 text-xl font-semibold leading-[1.9] text-slate-400 outline-none transition",
+      "focus:border-accent-deep focus:bg-white/60 focus:ring-4 focus:ring-accent-deep/15",
       "md:p-7 md:text-2xl",
     ],
     word: ["inline-block whitespace-nowrap"],

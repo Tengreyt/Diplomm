@@ -62,6 +62,8 @@
           </span>
         </span>
       </button>
+
+      <ProfileAiCoachCard :user="user" @open="emit('openAiCoach')" />
     </div>
 
     <ProfileTasks :tasks="user.tasks" :points="user.stats.points" />
@@ -92,6 +94,7 @@
 <script setup lang="ts">
 import { Settings, Star } from "@lucide/vue";
 import type { UserProfile } from "~/types/auth";
+import ProfileAiCoachCard from "~/components/profile/ProfileAiCoachCard.vue";
 import ProfileTasks from "~/components/profile/ProfileTasks.vue";
 import { formatCompactCount } from "~/utils/format";
 import { tv } from "tailwind-variants";
@@ -103,6 +106,7 @@ defineProps<{
 const emit = defineEmits<{
   openClan: [];
   openClanRating: [];
+  openAiCoach: [];
   openSettings: [];
   logout: [];
 }>();
@@ -120,17 +124,17 @@ const styles = tv({
     kicker: ["text-xs font-bold uppercase tracking-[0.24em] text-accent-deep"],
     title: ["mt-2 text-3xl font-semibold text-ink"],
     login: ["mt-1 text-sm text-muted"],
-    statsGrid: ["mt-5 grid grid-cols-2 gap-3"],
+    statsGrid: ["mt-5 grid auto-rows-[126px] grid-cols-2 gap-3"],
     pointsCard: [
-      "rounded-2xl border border-slate-900/10 bg-accent-soft/80 p-4 text-left",
+      "glass-card h-full overflow-hidden rounded-2xl bg-accent-soft/50 p-4 text-left",
     ],
     pointsTop: ["flex items-center justify-between gap-2"],
     pointsIcon: [
-      "inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-accent-deep",
+      "inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/60 text-accent-deep backdrop-blur-md",
     ],
     clanButton: [
-      "w-full rounded-2xl border border-slate-900/10 bg-white/90 p-4 text-left transition",
-      "hover:border-clan-teal/60 hover:bg-clan-teal/10",
+      "glass-card h-full w-full overflow-hidden rounded-2xl p-4 text-left transition",
+      "hover:border-clan-teal/50 hover:bg-clan-teal/10",
     ],
     statLabel: ["block text-xs font-semibold uppercase tracking-[0.18em] text-muted"],
     statValue: ["mt-2 block text-3xl"],
@@ -140,14 +144,14 @@ const styles = tv({
       "mt-2 inline-flex items-center gap-1 rounded-full bg-clan-teal/10 px-3 py-1 text-sm font-semibold text-clan-teal",
     ],
     memberIcon: ["text-base leading-none"],
-    clanNote: ["mt-4 rounded-2xl bg-clan-teal/10 p-4 text-sm leading-6 text-muted"],
+    clanNote: ["glass-card mt-4 rounded-2xl bg-clan-teal/10 p-4 text-sm leading-6 text-muted"],
     pillWrap: ["mb-3"],
     pill: [
-      "inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-clan-teal",
+      "inline-flex items-center rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-clan-teal backdrop-blur-md",
     ],
     pillIcon: ["mr-2 text-lg"],
     logoutButton: [
-      "mt-5 inline-flex w-full items-center justify-center rounded-2xl border border-slate-900/10 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-900 transition",
+      "glass-control mt-5 inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold text-slate-900 transition",
       "hover:border-red-500 hover:bg-red-50 hover:text-red-600",
     ],
   },

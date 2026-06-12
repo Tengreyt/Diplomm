@@ -11,6 +11,7 @@
 - Frontend: Nuxt 4, Vue 3, TypeScript, Tailwind CSS, `tailwind-variants`.
 - Backend: Node.js, Express, ES modules.
 - Хранилище: PostgreSQL через `pg`.
+- AI-тренер: backend вызывает OpenAI Responses API при наличии `OPENAI_API_KEY`; без ключа используется локальный fallback.
 - Авторизация: Bearer-токены в PostgreSQL-таблице `sessions` + токен в `localStorage` на клиенте.
 
 ## Быстрый запуск
@@ -52,8 +53,11 @@ npm run build
 - `backend/src/db/migrate.js` - SQL-схема `users` и `sessions`.
 - `backend/src/controllers/authController.js` - `/api/auth/register`, `/api/auth/login`.
 - `backend/src/controllers/resultsController.js` - `/api/results`, обновляет статистику и `lastResult`.
+- `backend/src/controllers/aiCoachController.js` - `/api/ai/coach`, персональное задание и совет AI-тренера.
 - `backend/src/controllers/clansController.js` - `/api/clans`, `/api/clans/:emoji`.
 - `backend/src/services/userService.js` - сериализация пользователя, bcrypt/SHA-256 legacy-проверка пароля, расчет очков клана, avatar presets.
+- `backend/src/services/typingAnalysisService.js` - анализ ошибок попытки печати.
+- `backend/src/services/aiCoachService.js` - prompt, OpenAI-запрос, JSON-схема ответа и локальный fallback.
 - `backend/src/repo/usersRepo.js` - PostgreSQL-запросы пользователей, статистики, кланов.
 - `backend/src/repo/sessionsRepo.js` - хранение hash bearer-токенов и сроков жизни сессий.
 - `backend/src/server.js` - совместимый wrapper для регистрации result routes; основной запуск идет через `index.js`.
@@ -71,7 +75,8 @@ npm run build
 - `frontend/app/pages/index.vue` - главный экран: гость видит auth + pitch, авторизованный пользователь видит профиль + тренажер.
 - `frontend/app/composables/useAuth.ts` - состояние авторизации, формы регистрации/логина, `localStorage`, запросы `/auth/register`, `/auth/login`, `/me`.
 - `frontend/app/composables/useTrainer.ts` - состояние урока, выбранная сложность, таймер, расчет WPM/accuracy/errors, запросы `/lesson`, `/results`.
-- `frontend/app/types/auth.ts` и `frontend/app/types/trainer.ts` - контракты данных между UI и API.
+- `frontend/app/composables/useAiCoach.ts` - загрузка персонального задания `/ai/coach` для профиля.
+- `frontend/app/types/auth.ts`, `frontend/app/types/trainer.ts`, `frontend/app/types/coach.ts` - контракты данных между UI и API.
 - `frontend/app/components/auth` - форма авторизации.
 - `frontend/app/components/profile` - профиль, настройки, таблицы/рейтинги клана.
 - `frontend/app/components/trainer` - UI тренажера, поверхность печати, статистика, экран результата.
@@ -89,7 +94,8 @@ npm run build
 - `GET /me` с `Authorization: Bearer <token>` -> `{ user }`.
 - `GET /clans` -> `{ clans: [{ emoji, members, points }] }`, где `points` - сумма очков участников.
 - `GET /clans/:emoji` -> `{ emoji, members }`, участники сортируются по очкам внутри клана.
-- `POST /results` с Bearer token, body: `wpm`, `accuracy`, `errors`, `seconds`; ответ: `{ user, result, tasks }`.
+- `GET /ai/coach` с Bearer token -> `{ coach }`.
+- `POST /results` с Bearer token, body: `wpm`, `accuracy`, `errors`, `seconds`, `lessonText`, `typedText`; ответ: `{ user, result, tasks, coach }`.
 
 Если меняешь поля API, синхронно обновляй:
 
@@ -107,6 +113,7 @@ npm run build
 - Для UI держись существующего стиля: Tailwind + `tailwind-variants`, Vue `<script setup lang="ts">`, русские тексты интерфейса.
 - Для backend держись ES modules, Express controllers, `userService`, PostgreSQL repo-слоя и миграции в `backend/src/db/migrate.js`.
 - Не добавляй JWT, ORM, Pinia, UI-kit или новый state manager без отдельного решения.
+- Не вызывай OpenAI API с frontend. Ключи и prompt AI-тренера должны оставаться на backend.
 
 ## Что читать первым
 
@@ -120,8 +127,10 @@ npm run build
 8. `frontend/app/pages/index.vue`
 9. `frontend/app/composables/useAuth.ts`
 10. `frontend/app/composables/useTrainer.ts`
-11. `frontend/app/types/auth.ts`
-12. `frontend/app/types/trainer.ts`
+11. `frontend/app/composables/useAiCoach.ts`
+12. `frontend/app/types/auth.ts`
+13. `frontend/app/types/trainer.ts`
+14. `frontend/app/types/coach.ts`
 
 ## Частые сценарии
 
