@@ -193,6 +193,26 @@ POSTGRES_PASSWORD=change-me docker compose -f docker-compose.prod.yml up --build
 Для публичного сервера также задай `CORS_ORIGIN`, `NUXT_PUBLIC_API_BASE`,
 `OPENAI_API_KEY` и надежный пароль PostgreSQL через окружение.
 
+### Render
+
+В корне находится `render.yaml`, который создает:
+
+- статический frontend `typing-arena-web`;
+- backend `typing-arena-api`;
+- PostgreSQL `typing-arena-db`;
+- миграцию перед каждым запуском новой версии.
+
+При создании Blueprint Render запросит секретные значения:
+
+```text
+CORS_ORIGIN=https://typing-arena-web.onrender.com
+NUXT_PUBLIC_API_BASE=https://typing-arena-api.onrender.com/api
+OPENAI_API_KEY=<необязательно>
+```
+
+Если Render назначит сервисам другие адреса, используй фактические URL из Dashboard.
+После изменения этих переменных выполни Manual Deploy для frontend и backend.
+
 ## Backend и деплой
 
 - Основное хранилище - PostgreSQL. Пользовательские данные не хранятся в файлах репозитория.
