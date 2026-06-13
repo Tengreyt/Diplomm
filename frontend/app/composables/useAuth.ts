@@ -13,6 +13,9 @@ type CurrentUserResponse = {
 
 export const useAuth = () => {
   const config = useRuntimeConfig();
+  const { clearProgress } = useProgress();
+  const { clearCoach } = useAiCoach();
+  const { clearClanData } = useClanData();
 
   const authMode = useState<AuthMode>("auth-mode", () => "register");
   const isPending = useState("auth-pending", () => false);
@@ -69,6 +72,9 @@ export const useAuth = () => {
     if (import.meta.client) {
       localStorage.removeItem(authStorageKey);
     }
+    clearProgress();
+    clearCoach();
+    clearClanData();
   };
 
   const registerUser = async (onSuccess?: () => Promise<void> | void) => {

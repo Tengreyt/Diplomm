@@ -86,6 +86,7 @@ npm run build
 - `frontend/app/composables/useTrainer.ts` - состояние попытки, локальный live-preview метрик и запросы `/attempts`, `/results`; итоговые метрики возвращает backend.
 - `frontend/app/composables/useAiCoach.ts` - загрузка персонального задания `/ai/coach` для профиля.
 - `frontend/app/composables/useProgress.ts` - история, графики, достижения и серия.
+- `frontend/app/composables/useClanData.ts` - TTL-кэш участников и рейтинга кланов.
 - `frontend/app/types/auth.ts`, `frontend/app/types/trainer.ts`, `frontend/app/types/coach.ts` - контракты данных между UI и API.
 - `frontend/app/types/progress.ts` - контракт аналитики и истории.
 - `frontend/app/components/auth` - форма авторизации.
@@ -126,6 +127,7 @@ npm run build
 - Не добавляй файловое хранилище пользователей обратно: основной источник данных - PostgreSQL.
 - Перед крупными изменениями сначала прочитай ближайшие composable/controller/type файлы, а не только компонент.
 - Для UI держись существующего стиля: Tailwind + `tailwind-variants`, Vue `<script setup lang="ts">`, русские тексты интерфейса.
+- Не дублируй одинаковые GET-запросы в компонентах: используй composable-кэш и инвалидируй его после мутаций.
 - Для backend держись ES modules, Express controllers, `userService`, PostgreSQL repo-слоя и миграции в `backend/src/db/migrate.js`.
 - Не добавляй JWT, ORM, Pinia, UI-kit или новый state manager без отдельного решения.
 - Не вызывай OpenAI API с frontend. Ключи и prompt AI-тренера должны оставаться на backend.

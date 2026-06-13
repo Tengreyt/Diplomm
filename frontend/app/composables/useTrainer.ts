@@ -28,9 +28,10 @@ export const useTrainer = () => {
   const savedStats = useState<TrainerStats | null>("trainer-saved-stats", () => null);
   const resultMessage = useState("trainer-result-message", () => "");
   const aiCoach = useState<AiCoach | null>("trainer-ai-coach", () => null);
-  const profileCoach = useState<AiCoach | null>("profile-ai-coach", () => null);
   const currentUser = useState<UserProfile | null>("auth-user", () => null);
   const { clearProgress } = useProgress();
+  const { setProfileCoach } = useAiCoach();
+  const { invalidateClanData } = useClanData();
 
   const updateElapsedSeconds = () => {
     if (!startedAt.value) {
@@ -183,8 +184,11 @@ export const useTrainer = () => {
       totalChars: response.result.totalChars
     };
     aiCoach.value = response.coach ?? null;
-    profileCoach.value = response.coach ?? profileCoach.value;
+    if (response.coach) {
+      setProfileCoach(response.coach);
+    }
     clearProgress();
+    invalidateClanData(response.user.emoji);
     resultMessage.value = response.tasks.earnedPoints > 0
       ? `Получено очков: ${response.tasks.earnedPoints}`
       : "Результат сохранен.";

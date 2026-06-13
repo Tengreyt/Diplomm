@@ -56,7 +56,6 @@ watch(
     props.user.stats.points,
   ],
   () => {
-    coach.value = null;
     void loadCoach();
   }
 );
