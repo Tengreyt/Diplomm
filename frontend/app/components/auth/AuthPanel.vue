@@ -23,6 +23,8 @@
         <input
           v-model="registerForm.login"
           type="text"
+          name="username"
+          autocomplete="username"
           placeholder="например, khalidtype"
           :class="inputField()"
         />
@@ -33,7 +35,9 @@
         <input
           v-model="registerForm.password"
           type="password"
-          placeholder="не короче 6 символов"
+          name="new-password"
+          autocomplete="new-password"
+          placeholder="не короче 8 символов"
           :class="inputField()"
         />
       </label>
@@ -43,6 +47,8 @@
         <input
           v-model="registerForm.nickname"
           type="text"
+          name="nickname"
+          autocomplete="nickname"
           placeholder="как тебя увидят в таблицах"
           :class="inputField()"
         />
@@ -93,6 +99,8 @@
         <input
           v-model="registerForm.avatarUrl"
           type="url"
+          name="avatar-url"
+          autocomplete="url"
           placeholder="Своя аватарка: https://example.com/image.jpg"
           :class="inputField()"
         />
@@ -112,6 +120,8 @@
         <input
           v-model="loginForm.login"
           type="text"
+          name="username"
+          autocomplete="username"
           placeholder="введи логин"
           :class="inputField()"
         />
@@ -122,6 +132,8 @@
         <input
           v-model="loginForm.password"
           type="password"
+          name="password"
+          autocomplete="current-password"
           placeholder="введи пароль"
           :class="inputField()"
         />

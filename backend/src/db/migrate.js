@@ -34,9 +34,44 @@ export async function migrateDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS training_attempts (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      lesson_id TEXT NOT NULL,
+      lesson_text TEXT NOT NULL,
+      difficulty TEXT NOT NULL CHECK (difficulty IN ('beginner', 'intermediate', 'advanced')),
+      source TEXT NOT NULL DEFAULT 'catalog' CHECK (source IN ('catalog', 'adaptive', 'coach')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      started_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS training_results (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      attempt_id TEXT NOT NULL UNIQUE REFERENCES training_attempts(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      lesson_id TEXT NOT NULL,
+      difficulty TEXT NOT NULL CHECK (difficulty IN ('beginner', 'intermediate', 'advanced')),
+      source TEXT NOT NULL CHECK (source IN ('catalog', 'adaptive', 'coach')),
+      wpm INTEGER NOT NULL CHECK (wpm >= 0),
+      accuracy INTEGER NOT NULL CHECK (accuracy >= 0 AND accuracy <= 100),
+      errors INTEGER NOT NULL CHECK (errors >= 0),
+      seconds INTEGER NOT NULL CHECK (seconds > 0),
+      correct_chars INTEGER NOT NULL CHECK (correct_chars >= 0),
+      total_chars INTEGER NOT NULL CHECK (total_chars > 0),
+      analysis JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   await pool.query('CREATE INDEX IF NOT EXISTS idx_users_emoji ON users (emoji)');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions (user_id)');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions (expires_at)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_attempts_user_created ON training_attempts (user_id, created_at DESC)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_results_user_created ON training_results (user_id, created_at DESC)');
 }
 
 async function migrateUserIdsToText() {

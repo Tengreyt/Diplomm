@@ -18,8 +18,19 @@ export function registerAuthRoutes(app, createSession) {
         return response.status(400).json({ message: 'Логин должен быть не короче 3 символов.' });
       }
 
-      if (String(password).length < 6) {
-        return response.status(400).json({ message: 'Пароль должен быть не короче 6 символов.' });
+      if (String(password).length < 8) {
+        return response.status(400).json({ message: 'Пароль должен быть не короче 8 символов.' });
+      }
+
+      if (cleanNickname.length < 2 || cleanNickname.length > 40) {
+        return response.status(400).json({ message: 'Никнейм должен содержать от 2 до 40 символов.' });
+      }
+
+      try {
+        const avatar = new URL(cleanAvatarUrl);
+        if (!['http:', 'https:'].includes(avatar.protocol)) throw new Error();
+      } catch {
+        return response.status(400).json({ message: 'Укажи корректную HTTP(S)-ссылку на аватар.' });
       }
 
       const existingUser = await userService.findUserByLogin(cleanLogin);

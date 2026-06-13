@@ -104,6 +104,28 @@ export async function updatePasswordHash(userId, passwordHash) {
   await pool.query('UPDATE users SET password_hash = $2 WHERE id = $1', [userId, passwordHash]);
 }
 
+export async function updateProfile(userId, { nickname, avatarUrl, passwordHash = null }) {
+  const { rows } = await pool.query(
+    `
+      UPDATE users
+      SET
+        nickname = $2,
+        avatar_url = $3,
+        password_hash = COALESCE($4, password_hash)
+      WHERE id = $1
+      RETURNING *
+    `,
+    [userId, nickname, avatarUrl, passwordHash]
+  );
+
+  return normalizeUser(rows[0]);
+}
+
+export async function deleteUser(userId) {
+  const result = await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+  return result.rowCount > 0;
+}
+
 export async function saveUserProgress(user) {
   const stats = user.stats ?? {};
 
@@ -182,7 +204,7 @@ export async function updateUserProgressInTransaction(userId, updateUser) {
       return null;
     }
 
-    await updateUser(user);
+    await updateUser(user, client);
     const savedUser = await saveUserProgressWithClient(client, user);
 
     await client.query('COMMIT');
@@ -243,6 +265,8 @@ export default {
   findUserByLogin,
   createUser,
   updatePasswordHash,
+  updateProfile,
+  deleteUser,
   saveUserProgress,
   updateUserProgressInTransaction,
   countClanMembers,

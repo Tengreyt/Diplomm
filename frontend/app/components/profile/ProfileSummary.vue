@@ -64,6 +64,20 @@
       </button>
 
       <ProfileAiCoachCard :user="user" @open="emit('openAiCoach')" />
+
+      <button
+        type="button"
+        :class="progressButton()"
+        @click="emit('openProgress')"
+      >
+        <span :class="statLabel()">Прогресс</span>
+        <span :class="clanValueRow()">
+          <span :class="progressIcon()" aria-hidden="true">
+            <ChartNoAxesCombined class="h-7 w-7" />
+          </span>
+          <span :class="memberBadge()">История и графики</span>
+        </span>
+      </button>
     </div>
 
     <ProfileTasks :tasks="user.tasks" :points="user.stats.points" />
@@ -92,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { Settings, Star } from "@lucide/vue";
+import { ChartNoAxesCombined, Settings, Star } from "@lucide/vue";
 import type { UserProfile } from "~/types/auth";
 import ProfileAiCoachCard from "~/components/profile/ProfileAiCoachCard.vue";
 import ProfileTasks from "~/components/profile/ProfileTasks.vue";
@@ -106,6 +120,7 @@ defineProps<{
 const emit = defineEmits<{
   openClan: [];
   openClanRating: [];
+  openProgress: [];
   openAiCoach: [];
   openSettings: [];
   logout: [];
@@ -135,6 +150,13 @@ const styles = tv({
     clanButton: [
       "glass-card h-full w-full overflow-hidden rounded-2xl p-4 text-left transition",
       "hover:border-clan-teal/50 hover:bg-clan-teal/10",
+    ],
+    progressButton: [
+      "glass-card col-span-2 h-full w-full overflow-hidden rounded-2xl p-4 text-left transition",
+      "hover:border-accent/50 hover:bg-accent-soft/40",
+    ],
+    progressIcon: [
+      "mt-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent-deep",
     ],
     statLabel: ["block text-xs font-semibold uppercase tracking-[0.18em] text-muted"],
     statValue: ["mt-2 block text-3xl"],
@@ -170,6 +192,8 @@ const {
   pointsTop,
   pointsIcon,
   clanButton,
+  progressButton,
+  progressIcon,
   statLabel,
   statValue,
   pointsValue,

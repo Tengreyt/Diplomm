@@ -68,7 +68,9 @@ export function buildPracticeText(focusChars = []) {
     return normalizedFocusChars.some((char) => word.includes(char));
   });
 
-  const words = focusedWords.length > 0 ? focusedWords : fallbackPracticeWords.slice(0, 6);
+  const words = focusedWords.length > 0
+    ? [...new Set([...focusedWords, ...fallbackPracticeWords])].slice(0, 6)
+    : fallbackPracticeWords.slice(0, 6);
 
   return [...words, ...words.slice(0, 3)].join(' ');
 }

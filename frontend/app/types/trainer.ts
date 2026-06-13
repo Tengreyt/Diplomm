@@ -1,12 +1,19 @@
 ﻿import type { AiCoach } from "~/types/coach";
 
-export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+export type ActualDifficulty = "beginner" | "intermediate" | "advanced";
+export type DifficultyLevel = ActualDifficulty | "adaptive";
 
 export type LessonResponse = {
-  id: number;
-  level: DifficultyLevel;
+  id: string;
+  level: ActualDifficulty;
   levelLabel: string;
   text: string;
+  source: "catalog" | "adaptive" | "coach";
+};
+
+export type AttemptResponse = {
+  attemptId: string;
+  lesson: LessonResponse;
 };
 
 export type TrainerStats = {
@@ -25,6 +32,8 @@ export type SaveResultResponse = {
     accuracy: number;
     errors: number;
     seconds: number;
+    correctChars: number;
+    totalChars: number;
     createdAt: string;
   };
   tasks: {

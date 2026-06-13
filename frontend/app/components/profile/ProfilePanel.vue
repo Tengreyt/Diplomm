@@ -7,6 +7,7 @@
         :user="user"
         @open-clan="openClan"
         @open-clan-rating="openClanRating"
+        @open-progress="openProgress"
         @open-ai-coach="openAiCoach"
         @open-settings="openSettings"
         @logout="emit('logout')"
@@ -42,6 +43,14 @@
         @start="startAiCoachLesson"
       />
 
+      <ProfileProgress
+        v-else-if="viewMode === 'progress'"
+        :progress="progress"
+        :is-loading="isProgressLoading"
+        :error-message="progressError"
+        @back="viewMode = 'profile'"
+      />
+
       <ProfileSettings
         v-else
         :user="user"
@@ -70,7 +79,7 @@ const emit = defineEmits<{
 }>();
 
 const config = useRuntimeConfig();
-const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "settings">("profile");
+const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "progress" | "settings">("profile");
 const clanMembers = ref<ClanMember[]>([]);
 const isClanLoading = ref(false);
 const clanError = ref("");
@@ -88,6 +97,13 @@ const {
   fetchProfileCoach,
 } = useAiCoach();
 const { startCoachLesson } = useTrainer();
+const {
+  progress,
+  isProgressLoading,
+  progressError,
+  fetchProgress,
+  clearProgress,
+} = useProgress();
 
 const clanLevel = computed(() => {
   const members = props.user.clanMembers;
@@ -173,6 +189,11 @@ const openSettings = () => {
   viewMode.value = "settings";
 };
 
+const openProgress = async () => {
+  viewMode.value = "progress";
+  await fetchProgress();
+};
+
 const openAiCoach = async () => {
   viewMode.value = "aiCoach";
   await fetchProfileCoach();
@@ -183,12 +204,12 @@ const refreshAiCoach = async () => {
   await fetchProfileCoach();
 };
 
-const startAiCoachLesson = () => {
+const startAiCoachLesson = async () => {
   if (!profileCoach.value) {
     return;
   }
 
-  startCoachLesson(profileCoach.value);
+  await startCoachLesson(profileCoach.value);
   viewMode.value = "profile";
 };
 
@@ -246,6 +267,7 @@ watch(
     activeClanPoints.value = null;
     activeClanMembers.value = null;
     loadedClanEmoji.value = "";
+    clearProgress();
   }
 );
 

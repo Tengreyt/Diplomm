@@ -78,19 +78,28 @@ const {
 } = useTrainer();
 
 onMounted(async () => {
-  await restoreSession(fetchLesson);
+  await restoreSession(async () => {
+    await fetchLesson();
+    await navigateTo("/");
+  });
 });
 
 const handleRegister = async () => {
-  await registerUser(fetchLesson);
+  await registerUser(async () => {
+    await fetchLesson();
+    await navigateTo("/");
+  });
 };
 
 const handleLogin = async () => {
-  await loginUser(fetchLesson);
+  await loginUser(async () => {
+    await fetchLesson();
+    await navigateTo("/");
+  });
 };
 
 const handleLogout = () => {
-  logout();
+  void logout();
   resetTrainer();
 };
 
