@@ -7,6 +7,7 @@
         :user="user"
         @open-clan="openClan"
         @open-clan-rating="openClanRating"
+        @open-progress="openProgress"
         @open-ai-coach="openAiCoach"
         @open-settings="openSettings"
         @logout="emit('logout')"
@@ -42,6 +43,14 @@
         @start="startAiCoachLesson"
       />
 
+      <ProfileProgress
+        v-else-if="viewMode === 'progress'"
+        :progress="progress"
+        :is-loading="isProgressLoading"
+        :error-message="progressError"
+        @back="viewMode = 'profile'"
+      />
+
       <ProfileSettings
         v-else
         :user="user"
@@ -55,8 +64,6 @@
 import type {
   ClanMember,
   ClanRatingItem,
-  ClanRatingResponse,
-  ClanResponse,
   UserProfile
 } from "~/types/auth";
 import { tv } from "tailwind-variants";
@@ -69,8 +76,7 @@ const emit = defineEmits<{
   logout: [];
 }>();
 
-const config = useRuntimeConfig();
-const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "settings">("profile");
+const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "progress" | "settings">("profile");
 const clanMembers = ref<ClanMember[]>([]);
 const isClanLoading = ref(false);
 const clanError = ref("");
@@ -81,13 +87,23 @@ const activeClanEmoji = ref("");
 const activeClanRank = ref<number | null>(null);
 const activeClanPoints = ref<number | null>(null);
 const activeClanMembers = ref<number | null>(null);
-const loadedClanEmoji = ref("");
 const {
   profileCoach,
   isCoachLoading,
   fetchProfileCoach,
 } = useAiCoach();
 const { startCoachLesson } = useTrainer();
+const {
+  progress,
+  isProgressLoading,
+  progressError,
+  fetchProgress,
+  clearProgress,
+} = useProgress();
+const {
+  fetchClanMembers,
+  fetchClanRating,
+} = useClanData();
 
 const clanLevel = computed(() => {
   const members = props.user.clanMembers;
@@ -147,23 +163,13 @@ const openClan = async () => {
 };
 
 const loadClanMembers = async (emoji: string) => {
-  if (clanMembers.value.length > 0 && loadedClanEmoji.value === emoji) {
-    return;
-  }
-
   isClanLoading.value = true;
   clanError.value = "";
 
   try {
-    const response = await $fetch<ClanResponse>(
-      `${config.public.apiBase}/clans/${encodeURIComponent(emoji)}`
-    );
-
-    clanMembers.value = response.members;
-    loadedClanEmoji.value = emoji;
+    clanMembers.value = await fetchClanMembers(emoji);
   } catch {
     clanError.value = "Не удалось загрузить участников клана.";
-    loadedClanEmoji.value = "";
   } finally {
     isClanLoading.value = false;
   }
@@ -173,40 +179,36 @@ const openSettings = () => {
   viewMode.value = "settings";
 };
 
+const openProgress = async () => {
+  viewMode.value = "progress";
+  await fetchProgress();
+};
+
 const openAiCoach = async () => {
   viewMode.value = "aiCoach";
   await fetchProfileCoach();
 };
 
 const refreshAiCoach = async () => {
-  profileCoach.value = null;
-  await fetchProfileCoach();
+  await fetchProfileCoach(true);
 };
 
-const startAiCoachLesson = () => {
+const startAiCoachLesson = async () => {
   if (!profileCoach.value) {
     return;
   }
 
-  startCoachLesson(profileCoach.value);
+  await startCoachLesson(profileCoach.value);
   viewMode.value = "profile";
 };
 
 const openClanRating = async () => {
   viewMode.value = "clanRating";
-
-  if (clanRating.value.length > 0) {
-    return;
-  }
-
   isClanRatingLoading.value = true;
   clanRatingError.value = "";
 
   try {
-    const response = await $fetch<ClanRatingResponse>(
-      `${config.public.apiBase}/clans`
-    );
-    clanRating.value = response.clans;
+    clanRating.value = await fetchClanRating();
   } catch {
     clanRatingError.value = "Не удалось загрузить рейтинг кланов.";
   } finally {
@@ -245,7 +247,7 @@ watch(
     activeClanRank.value = null;
     activeClanPoints.value = null;
     activeClanMembers.value = null;
-    loadedClanEmoji.value = "";
+    clearProgress();
   }
 );
 

@@ -6,6 +6,11 @@ export const difficultyOptions: Array<{
   description: string;
 }> = [
   {
+    value: "adaptive",
+    label: "Адаптивный",
+    description: "Уровень и символы выбираются по истории результатов"
+  },
+  {
     value: "beginner",
     label: "Начальный",
     description: "Короткие слова и спокойный темп"
@@ -28,6 +33,7 @@ export const difficultyLabels = difficultyOptions.reduce<Record<DifficultyLevel,
     return labels;
   },
   {
+    adaptive: "Адаптивный",
     beginner: "Начальный",
     intermediate: "Средний",
     advanced: "Сложный"

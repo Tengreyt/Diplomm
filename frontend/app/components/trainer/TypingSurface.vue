@@ -91,10 +91,7 @@ const onKeydown = (event: KeyboardEvent) => {
 };
 
 const onPaste = (event: ClipboardEvent) => {
-  const pastedText = event.clipboardData?.getData('text') ?? '';
-  if (!pastedText) return;
   event.preventDefault();
-  updateTypedText(`${props.typedText}${props.typedText.length === 0 ? pastedText.trimStart() : pastedText}`);
 };
 
 const getCharacterState = (index: number) => {

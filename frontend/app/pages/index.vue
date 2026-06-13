@@ -48,7 +48,7 @@ onMounted(async () => {
 });
 
 const handleLogout = () => {
-  logout();
+  void logout();
   resetTrainer();
 };
 

@@ -13,6 +13,9 @@ type CurrentUserResponse = {
 
 export const useAuth = () => {
   const config = useRuntimeConfig();
+  const { clearProgress } = useProgress();
+  const { clearCoach } = useAiCoach();
+  const { clearClanData } = useClanData();
 
   const authMode = useState<AuthMode>("auth-mode", () => "register");
   const isPending = useState("auth-pending", () => false);
@@ -60,6 +63,18 @@ export const useAuth = () => {
   const clearForms = () => {
     loginForm.password = "";
     registerForm.password = "";
+  };
+
+  const clearSession = () => {
+    authToken.value = "";
+    currentUser.value = null;
+    authMessage.value = "";
+    if (import.meta.client) {
+      localStorage.removeItem(authStorageKey);
+    }
+    clearProgress();
+    clearCoach();
+    clearClanData();
   };
 
   const registerUser = async (onSuccess?: () => Promise<void> | void) => {
@@ -136,15 +151,48 @@ export const useAuth = () => {
       currentUser.value = response.user;
       await onSuccess?.();
     } catch {
-      logout();
+      clearSession();
     }
   };
 
-  const logout = () => {
-    authToken.value = "";
-    currentUser.value = null;
-    authMessage.value = "";
-    localStorage.removeItem(authStorageKey);
+  const updateProfile = async (payload: {
+    nickname: string;
+    avatarUrl: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => {
+    const token = localStorage.getItem(authStorageKey);
+    const response = await $fetch<CurrentUserResponse>(`${config.public.apiBase}/me`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+      body: payload
+    });
+    currentUser.value = response.user;
+    return response.user;
+  };
+
+  const deleteAccount = async (password: string) => {
+    const token = localStorage.getItem(authStorageKey);
+    await $fetch(`${config.public.apiBase}/me`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      body: { password }
+    });
+    clearSession();
+  };
+
+  const logout = async () => {
+    const token = import.meta.client ? localStorage.getItem(authStorageKey) : "";
+    try {
+      if (token) {
+        await $fetch(`${config.public.apiBase}/auth/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } finally {
+      clearSession();
+    }
   };
 
   return {
@@ -162,6 +210,8 @@ export const useAuth = () => {
     registerUser,
     loginUser,
     restoreSession,
+    updateProfile,
+    deleteAccount,
     logout
   };
 };

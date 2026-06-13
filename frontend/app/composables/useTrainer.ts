@@ -1,7 +1,7 @@
-﻿import { authStorageKey } from "~/constants/auth";
+import { authStorageKey } from "~/constants/auth";
 import type {
+  AttemptResponse,
   DifficultyLevel,
-  LessonResponse,
   SaveResultResponse,
   TrainerStats
 } from "~/types/trainer";
@@ -9,46 +9,42 @@ import type { AiCoach } from "~/types/coach";
 import type { UserProfile } from "~/types/auth";
 
 const waitingLessonText = "После входа здесь появится текст тренировки.";
-const offlineLessonText =
-  "Не удалось получить текст тренировки. Проверь backend на порту 4001.";
+const offlineLessonText = "Не удалось получить текст тренировки. Проверь подключение к backend.";
 
 let trainerTimerId: ReturnType<typeof setInterval> | null = null;
+let attemptStartPromise: Promise<void> | null = null;
 
 export const useTrainer = () => {
   const config = useRuntimeConfig();
 
   const lessonText = useState("trainer-lesson-text", () => waitingLessonText);
   const lessonLevel = useState("trainer-lesson-level", () => "waiting");
-  const selectedDifficulty = useState<DifficultyLevel>("trainer-difficulty", () => "beginner");
+  const selectedDifficulty = useState<DifficultyLevel>("trainer-difficulty", () => "adaptive");
+  const attemptId = useState("trainer-attempt-id", () => "");
   const typedText = useState("trainer-typed-text", () => "");
   const startedAt = useState<number | null>("trainer-started-at", () => null);
   const elapsedSeconds = useState("trainer-elapsed-seconds", () => 0);
   const isResultSaved = useState("trainer-result-saved", () => false);
+  const savedStats = useState<TrainerStats | null>("trainer-saved-stats", () => null);
   const resultMessage = useState("trainer-result-message", () => "");
   const aiCoach = useState<AiCoach | null>("trainer-ai-coach", () => null);
-  const profileCoach = useState<AiCoach | null>("profile-ai-coach", () => null);
   const currentUser = useState<UserProfile | null>("auth-user", () => null);
+  const { clearProgress } = useProgress();
+  const { setProfileCoach } = useAiCoach();
+  const { invalidateClanData } = useClanData();
 
   const updateElapsedSeconds = () => {
     if (!startedAt.value) {
       elapsedSeconds.value = 0;
       return;
     }
-
-    elapsedSeconds.value = Math.max(
-      1,
-      Math.floor((Date.now() - startedAt.value) / 1000)
-    );
+    elapsedSeconds.value = Math.max(1, Math.floor((Date.now() - startedAt.value) / 1000));
   };
 
   const startTimer = () => {
-    if (startedAt.value) {
-      return;
-    }
-
+    if (startedAt.value) return;
     startedAt.value = Date.now();
     elapsedSeconds.value = 1;
-
     if (import.meta.client && !trainerTimerId) {
       trainerTimerId = setInterval(updateElapsedSeconds, 1000);
     }
@@ -56,168 +52,183 @@ export const useTrainer = () => {
 
   const stopTimer = () => {
     updateElapsedSeconds();
-
     if (trainerTimerId) {
       clearInterval(trainerTimerId);
       trainerTimerId = null;
     }
   };
 
-  const stats = computed<TrainerStats>(() => {
+  const liveStats = computed<TrainerStats>(() => {
     const expected = lessonText.value;
     const actual = typedText.value;
-
     let correctChars = 0;
     let errors = 0;
 
     for (let index = 0; index < actual.length; index += 1) {
-      if (actual[index] === expected[index]) {
-        correctChars += 1;
-      } else {
-        errors += 1;
-      }
+      if (actual[index] === expected[index]) correctChars += 1;
+      else errors += 1;
     }
 
-    const accuracy = actual.length
-      ? Math.round((correctChars / actual.length) * 100)
-      : 100;
-
-    const seconds = elapsedSeconds.value;
-    const minutes = seconds > 0 ? seconds / 60 : 0;
-    const wpm = minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0;
+    const accuracy = actual.length ? Math.round((correctChars / actual.length) * 100) : 100;
+    const minutes = elapsedSeconds.value > 0 ? elapsedSeconds.value / 60 : 0;
 
     return {
       correctChars,
       accuracy,
       totalChars: expected.length,
       errors,
-      wpm,
-      seconds,
+      wpm: minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0,
+      seconds: elapsedSeconds.value
     };
   });
 
+  const stats = computed(() => savedStats.value ?? liveStats.value);
+
   const resetAttemptState = () => {
+    stopTimer();
     typedText.value = "";
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
+    savedStats.value = null;
     resultMessage.value = "";
-    stopTimer();
+    attemptStartPromise = null;
+  };
+
+  const createAttempt = async (targetText = "") => {
+    if (!import.meta.client) return;
+    const token = localStorage.getItem(authStorageKey);
+    if (!token) return;
+
+    const response = await $fetch<AttemptResponse>(`${config.public.apiBase}/attempts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: {
+        difficulty: selectedDifficulty.value,
+        targetText: targetText || undefined
+      }
+    });
+
+    attemptId.value = response.attemptId;
+    lessonText.value = response.lesson.text;
+    lessonLevel.value = response.lesson.levelLabel;
+    resetAttemptState();
   };
 
   const fetchLesson = async () => {
-    if (aiCoach.value?.task.targetText) {
-      lessonText.value = aiCoach.value.task.targetText;
-      lessonLevel.value = "AI-задание";
-      resetAttemptState();
-      return;
-    }
-
+    aiCoach.value = null;
     try {
-      const response = await $fetch<LessonResponse>(
-        `${config.public.apiBase}/lesson`,
-        {
-          query: {
-            level: selectedDifficulty.value,
-          },
-        }
-      );
-
-      lessonText.value = response.text;
-      lessonLevel.value = response.levelLabel;
-      resetAttemptState();
+      await createAttempt();
     } catch {
+      attemptId.value = "";
       lessonText.value = offlineLessonText;
       lessonLevel.value = "offline";
       resetAttemptState();
     }
   };
 
-  const startCoachLesson = (coach: AiCoach) => {
+  const startCoachLesson = async (coach: AiCoach) => {
     aiCoach.value = coach;
-    lessonText.value = coach.task.targetText;
-    lessonLevel.value = "AI-задание";
-    resetAttemptState();
+    try {
+      await createAttempt(coach.task.targetText);
+    } catch {
+      resultMessage.value = "Не удалось запустить AI-задание.";
+    }
   };
 
   const selectDifficulty = async (difficulty: DifficultyLevel) => {
     selectedDifficulty.value = difficulty;
-    aiCoach.value = null;
     await fetchLesson();
   };
 
-  const saveResult = async () => {
-    if (!import.meta.client) {
-      return;
-    }
+  const startServerAttempt = () => {
+    if (!import.meta.client || !attemptId.value) return Promise.resolve();
+    if (attemptStartPromise) return attemptStartPromise;
 
     const token = localStorage.getItem(authStorageKey);
+    attemptStartPromise = $fetch(`${config.public.apiBase}/attempts/${attemptId.value}/start`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => undefined)
+      .catch((error) => {
+        attemptStartPromise = null;
+        throw error;
+      });
 
-    if (!token) {
-      return;
-    }
+    return attemptStartPromise;
+  };
 
+  const saveResult = async () => {
+    if (!import.meta.client || !attemptId.value) return;
+    const token = localStorage.getItem(authStorageKey);
+    if (!token) return;
+
+    await startServerAttempt();
     const response = await $fetch<SaveResultResponse>(`${config.public.apiBase}/results`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: {
-        wpm: stats.value.wpm,
-        accuracy: stats.value.accuracy,
-        errors: stats.value.errors,
-        seconds: stats.value.seconds,
-        lessonText: lessonText.value,
-        typedText: typedText.value,
-        difficulty: selectedDifficulty.value,
-      },
+        attemptId: attemptId.value,
+        typedText: typedText.value
+      }
     });
 
     currentUser.value = response.user;
+    savedStats.value = {
+      wpm: response.result.wpm,
+      accuracy: response.result.accuracy,
+      errors: response.result.errors,
+      seconds: response.result.seconds,
+      correctChars: response.result.correctChars,
+      totalChars: response.result.totalChars
+    };
     aiCoach.value = response.coach ?? null;
-    profileCoach.value = response.coach ?? profileCoach.value;
+    if (response.coach) {
+      setProfileCoach(response.coach);
+    }
+    clearProgress();
+    invalidateClanData(response.user.emoji);
     resultMessage.value = response.tasks.earnedPoints > 0
       ? `Получено очков: ${response.tasks.earnedPoints}`
       : "Результат сохранен.";
   };
 
   const updateTypedText = async (value: string) => {
-    if (value.length > 0) {
+    if (value.length > 0 && !startedAt.value) {
       startTimer();
+      void startServerAttempt().catch(() => undefined);
     }
 
     typedText.value = value;
-
-    const isFinished = value.length >= lessonText.value.length;
-
-    if (isFinished && !isResultSaved.value) {
+    if (value.length >= lessonText.value.length && !isResultSaved.value) {
       isResultSaved.value = true;
       stopTimer();
-
       try {
         await saveResult();
-      } catch {
-        resultMessage.value = "Результат посчитан, но сохранить его не удалось.";
-        // The result screen still works locally if saving fails.
+      } catch (error: any) {
+        resultMessage.value = error?.data?.message || "Результат посчитан, но сохранить его не удалось.";
       }
     }
   };
 
   const resetTrainer = () => {
+    stopTimer();
     lessonText.value = waitingLessonText;
     lessonLevel.value = "waiting";
+    attemptId.value = "";
     typedText.value = "";
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
+    savedStats.value = null;
     resultMessage.value = "";
     aiCoach.value = null;
-    stopTimer();
+    attemptStartPromise = null;
+    clearProgress();
   };
 
-  if (import.meta.client) {
-    onUnmounted(stopTimer);
-  }
+  if (import.meta.client) onUnmounted(stopTimer);
 
   return {
     lessonText,
@@ -232,6 +243,6 @@ export const useTrainer = () => {
     saveResult,
     resultMessage,
     updateTypedText,
-    resetTrainer,
+    resetTrainer
   };
 };

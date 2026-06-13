@@ -43,23 +43,30 @@ npm run typecheck
 npm run build
 ```
 
-У backend сейчас нет тестового скрипта. Если меняешь API, минимум проверь запуск backend и ручной сценарий регистрации/логина/сохранения результата.
+Для backend запускай `npm test`. Если меняешь API, дополнительно проверь миграцию и ручной сценарий регистрации/логина/сохранения результата.
 
 ## Архитектура backend
 
 - `backend/src/index.js` - точка запуска, импортирует `app` и слушает порт.
 - `backend/src/app.js` - создает Express-приложение, подключает middleware/CORS, публичные `/api/health`, `/api/lesson`, защищенный `/api/me`, регистрирует контроллеры.
 - `backend/src/db/pool.js` - PostgreSQL pool, `DATABASE_URL`, SSL-настройка.
-- `backend/src/db/migrate.js` - SQL-схема `users` и `sessions`.
+- `backend/src/db/migrate.js` - SQL-схема пользователей, сессий, попыток и результатов.
 - `backend/src/controllers/authController.js` - `/api/auth/register`, `/api/auth/login`.
 - `backend/src/controllers/resultsController.js` - `/api/results`, обновляет статистику и `lastResult`.
+- `backend/src/controllers/attemptsController.js` - создание и серверный запуск попытки.
+- `backend/src/controllers/progressController.js` - история, серии, достижения и рекомендации.
+- `backend/src/controllers/profileController.js` - редактирование/удаление профиля и logout.
 - `backend/src/controllers/aiCoachController.js` - `/api/ai/coach`, персональное задание и совет AI-тренера.
 - `backend/src/controllers/clansController.js` - `/api/clans`, `/api/clans/:emoji`.
 - `backend/src/services/userService.js` - сериализация пользователя, bcrypt/SHA-256 legacy-проверка пароля, расчет очков клана, avatar presets.
 - `backend/src/services/typingAnalysisService.js` - анализ ошибок попытки печати.
+- `backend/src/services/resultMetricsService.js` - серверный расчет WPM, точности и ошибок.
+- `backend/src/services/lessonService.js` - каталог и адаптивный выбор уроков.
+- `backend/src/services/progressService.js` - серии, агрегаты и достижения.
 - `backend/src/services/aiCoachService.js` - prompt, OpenAI-запрос, JSON-схема ответа и локальный fallback.
 - `backend/src/repo/usersRepo.js` - PostgreSQL-запросы пользователей, статистики, кланов.
 - `backend/src/repo/sessionsRepo.js` - хранение hash bearer-токенов и сроков жизни сессий.
+- `backend/src/repo/trainingRepo.js` - попытки и история результатов.
 - `backend/src/server.js` - совместимый wrapper для регистрации result routes; основной запуск идет через `index.js`.
 
 Важные ограничения backend:
@@ -67,6 +74,8 @@ npm run build
 - Пользовательские данные хранятся в PostgreSQL, а не в JSON-файлах репозитория.
 - Новые пароли хешируются bcrypt. SHA-256 нужен только для совместимости со старыми импортированными пользователями.
 - Сессии хранятся как SHA-256 hash токена в PostgreSQL и имеют TTL.
+- Метрики результата считаются на backend по сохраненной попытке; не доверяй WPM с клиента.
+- Завершение попытки, запись результата и обновление пользователя выполняются транзакционно.
 - Перед изменением схемы обновляй `backend/src/db/migrate.js`, репозиторий и README.
 - `serializeUser` не должен отдавать `passwordHash`.
 
@@ -74,9 +83,12 @@ npm run build
 
 - `frontend/app/pages/index.vue` - главный экран: гость видит auth + pitch, авторизованный пользователь видит профиль + тренажер.
 - `frontend/app/composables/useAuth.ts` - состояние авторизации, формы регистрации/логина, `localStorage`, запросы `/auth/register`, `/auth/login`, `/me`.
-- `frontend/app/composables/useTrainer.ts` - состояние урока, выбранная сложность, таймер, расчет WPM/accuracy/errors, запросы `/lesson`, `/results`.
+- `frontend/app/composables/useTrainer.ts` - состояние попытки, локальный live-preview метрик и запросы `/attempts`, `/results`; итоговые метрики возвращает backend.
 - `frontend/app/composables/useAiCoach.ts` - загрузка персонального задания `/ai/coach` для профиля.
+- `frontend/app/composables/useProgress.ts` - история, графики, достижения и серия.
+- `frontend/app/composables/useClanData.ts` - TTL-кэш участников и рейтинга кланов.
 - `frontend/app/types/auth.ts`, `frontend/app/types/trainer.ts`, `frontend/app/types/coach.ts` - контракты данных между UI и API.
+- `frontend/app/types/progress.ts` - контракт аналитики и истории.
 - `frontend/app/components/auth` - форма авторизации.
 - `frontend/app/components/profile` - профиль, настройки, таблицы/рейтинги клана.
 - `frontend/app/components/trainer` - UI тренажера, поверхность печати, статистика, экран результата.
@@ -95,7 +107,11 @@ npm run build
 - `GET /clans` -> `{ clans: [{ emoji, members, points }] }`, где `points` - сумма очков участников.
 - `GET /clans/:emoji` -> `{ emoji, members }`, участники сортируются по очкам внутри клана.
 - `GET /ai/coach` с Bearer token -> `{ coach }`.
-- `POST /results` с Bearer token, body: `wpm`, `accuracy`, `errors`, `seconds`, `lessonText`, `typedText`; ответ: `{ user, result, tasks, coach }`.
+- `POST /attempts` с Bearer token, body: `difficulty`, опционально `targetText` -> `{ attemptId, lesson }`.
+- `POST /attempts/:attemptId/start` с Bearer token -> `{ startedAt }`.
+- `POST /results` с Bearer token, body: `attemptId`, `typedText`; ответ: `{ user, result, tasks, coach }`.
+- `GET /progress` с Bearer token -> `{ summary, history }`.
+- `PATCH /me`, `DELETE /me`, `POST /auth/logout` управляют профилем и сессией.
 
 Если меняешь поля API, синхронно обновляй:
 
@@ -111,6 +127,7 @@ npm run build
 - Не добавляй файловое хранилище пользователей обратно: основной источник данных - PostgreSQL.
 - Перед крупными изменениями сначала прочитай ближайшие composable/controller/type файлы, а не только компонент.
 - Для UI держись существующего стиля: Tailwind + `tailwind-variants`, Vue `<script setup lang="ts">`, русские тексты интерфейса.
+- Не дублируй одинаковые GET-запросы в компонентах: используй composable-кэш и инвалидируй его после мутаций.
 - Для backend держись ES modules, Express controllers, `userService`, PostgreSQL repo-слоя и миграции в `backend/src/db/migrate.js`.
 - Не добавляй JWT, ORM, Pinia, UI-kit или новый state manager без отдельного решения.
 - Не вызывай OpenAI API с frontend. Ключи и prompt AI-тренера должны оставаться на backend.

@@ -124,7 +124,12 @@ export function applyTaskProgress(user, result, now = new Date()) {
         currentState.completed = true;
         currentState.completedAt = now.toISOString();
         earnedPoints += task.points;
-        completedTasks.push(task);
+        completedTasks.push({
+          id: task.id,
+          period: task.period,
+          title: task.title,
+          points: task.points
+        });
         user.taskCompletions.push({
           taskId: task.id,
           period: task.period,
