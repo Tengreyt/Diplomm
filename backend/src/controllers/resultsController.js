@@ -1,6 +1,9 @@
 import trainingRepo from '../repo/trainingRepo.js';
 import aiCoachService from '../services/aiCoachService.js';
-import { calculateResultMetrics } from '../services/resultMetricsService.js';
+import {
+  calculateResultMetrics,
+  resolveCumulativeErrors
+} from '../services/resultMetricsService.js';
 import { analyzeTypingAttempt } from '../services/typingAnalysisService.js';
 import userService from '../services/userService.js';
 
@@ -18,6 +21,7 @@ export function registerResultController({ app, getSession }) {
 
       const attemptId = String(request.body?.attemptId ?? '').trim();
       const typedText = String(request.body?.typedText ?? '');
+      const reportedTotalErrors = request.body?.totalErrors;
 
       if (!attemptId) {
         return response.status(400).json({ message: 'Не указан идентификатор попытки.' });
@@ -45,11 +49,20 @@ export function registerResultController({ app, getSession }) {
           }
 
           const elapsedMs = Date.now() - new Date(attempt.startedAt).getTime();
-          const metrics = calculateResultMetrics({
+          const baseMetrics = calculateResultMetrics({
             lessonText: attempt.lessonText,
             typedText,
             seconds: Math.ceil(elapsedMs / 1000)
           });
+          const errors = resolveCumulativeErrors({
+            lessonText: attempt.lessonText,
+            remainingErrors: baseMetrics.remainingErrors,
+            reportedTotalErrors
+          });
+          const metrics = {
+            ...baseMetrics,
+            errors
+          };
           const analysis = analyzeTypingAttempt({
             lessonText: attempt.lessonText,
             typedText,

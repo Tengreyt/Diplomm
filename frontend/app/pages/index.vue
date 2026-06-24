@@ -8,11 +8,13 @@
         :lesson-text="lessonText"
         :lesson-level="lessonLevel"
         :selected-difficulty="selectedDifficulty"
+        :selected-pace="selectedPace"
         :typed-text="typedText"
         :stats="stats"
         :result-message="resultMessage"
         :coach="aiCoach"
         @update:difficulty="selectDifficulty"
+        @update:pace="selectPace"
         @update:typed-text="updateTypedText"
         @refresh-lesson="fetchLesson"
       />
@@ -33,12 +35,14 @@ const {
   lessonText,
   lessonLevel,
   selectedDifficulty,
+  selectedPace,
   typedText,
   stats,
   aiCoach,
   resultMessage,
   fetchLesson,
   selectDifficulty,
+  selectPace,
   updateTypedText,
   resetTrainer
 } = useTrainer();

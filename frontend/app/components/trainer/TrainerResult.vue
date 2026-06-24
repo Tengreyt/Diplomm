@@ -175,7 +175,7 @@ const formattedTime = computed(() => {
 const styles = tv({
   slots: {
     resultRoot: [
-      "glass-panel mt-6 mb-4 rounded-3xl p-6",
+      "flex flex-1 flex-col rounded-2xl border border-slate-900/8 bg-white/70 p-5",
     ],
 
     header: ["flex items-center justify-between gap-6"],

@@ -2,13 +2,13 @@ export function calculateResultMetrics({ lessonText = '', typedText = '', second
   const expected = Array.from(String(lessonText));
   const actual = Array.from(String(typedText)).slice(0, expected.length);
   let correctChars = 0;
-  let errors = 0;
+  let remainingErrors = 0;
 
   for (let index = 0; index < expected.length; index += 1) {
     if (actual[index] === expected[index]) {
       correctChars += 1;
     } else {
-      errors += 1;
+      remainingErrors += 1;
     }
   }
 
@@ -21,11 +21,38 @@ export function calculateResultMetrics({ lessonText = '', typedText = '', second
   return {
     wpm: Math.max(0, wpm),
     accuracy: Math.max(0, Math.min(100, accuracy)),
-    errors,
+    errors: remainingErrors,
+    remainingErrors,
     seconds: safeSeconds,
     correctChars,
     totalChars: expected.length
   };
 }
 
-export default { calculateResultMetrics };
+/**
+ * Накопительные ошибки приходят с клиента (каждый неверный ввод, включая исправленные).
+ * Сервер проверяет диапазон и не доверяет значению вне разумных границ.
+ */
+export function resolveCumulativeErrors({
+  lessonText = '',
+  remainingErrors = 0,
+  reportedTotalErrors
+} = {}) {
+  const lessonLength = Array.from(String(lessonText)).length;
+  const minErrors = Math.max(0, Math.round(Number(remainingErrors) || 0));
+  const maxErrors = Math.max(minErrors, lessonLength * 20);
+
+  if (reportedTotalErrors === undefined || reportedTotalErrors === null) {
+    return minErrors;
+  }
+
+  const totalErrors = Math.round(Number(reportedTotalErrors));
+
+  if (!Number.isFinite(totalErrors) || totalErrors < minErrors || totalErrors > maxErrors) {
+    return minErrors;
+  }
+
+  return totalErrors;
+}
+
+export default { calculateResultMetrics, resolveCumulativeErrors };
