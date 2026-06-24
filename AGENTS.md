@@ -109,7 +109,7 @@ npm run build
 - `GET /ai/coach` с Bearer token -> `{ coach }`.
 - `POST /attempts` с Bearer token, body: `difficulty`, опционально `targetText` -> `{ attemptId, lesson }`.
 - `POST /attempts/:attemptId/start` с Bearer token -> `{ startedAt }`.
-- `POST /results` с Bearer token, body: `attemptId`, `typedText`; ответ: `{ user, result, tasks, coach }`.
+- `POST /results` с Bearer token, body: `attemptId`, `typedText`, опционально `totalErrors` (накопительные ошибки с клиента); ответ: `{ user, result, tasks, coach }`.
 - `GET /progress` с Bearer token -> `{ summary, history }`.
 - `PATCH /me`, `DELETE /me`, `POST /auth/logout` управляют профилем и сессией.
 

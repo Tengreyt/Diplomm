@@ -138,7 +138,7 @@ password: Demo1234
   body: `difficulty`; для AI-задания дополнительно `targetText`
 - `POST /attempts/:attemptId/start` - зафиксировать серверное время первого ввода
 - `POST /results` - завершить попытку
-  body: `attemptId`, `typedText`; WPM, точность, ошибки и время считает backend
+  body: `attemptId`, `typedText`, опционально `totalErrors` (все допущенные ошибки, включая исправленные); WPM, точность и время считает backend
 - `GET /progress` - история, средние показатели, серия, достижения и рекомендуемый уровень
 
 ### Управление профилем

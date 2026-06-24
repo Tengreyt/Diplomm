@@ -22,8 +22,8 @@
 
     <div :class="statCard()">
       <span :class="statLabel()">Скорость</span>
-      <div class="mt-2 inline-flex items-center gap-2">
-        <strong :class="statValueWpm()">{{ stats.wpm }}</strong>
+      <div :class="speedRow()">
+        <strong :class="statValue()">{{ stats.wpm }}</strong>
         <span :class="wpmUnit()">WPM</span>
       </div>
     </div>
@@ -31,24 +31,32 @@
 </template>
 
 <script setup lang="ts">
-import { tv } from 'tailwind-variants';
-import type { TrainerStats } from '~/types/trainer';
+import { tv } from "tailwind-variants";
+import type { TrainerStats } from "~/types/trainer";
 
-const props = defineProps<{
+defineProps<{
   stats: TrainerStats;
   formattedTime: string;
 }>();
 
 const styles = tv({
   slots: {
-    statsGrid: ['mt-6 grid gap-3 md:grid-cols-5'],
-    statCard: ['glass-card rounded-2xl p-4'],
-    statLabel: ['block text-xs font-semibold uppercase tracking-[0.18em] text-muted'],
-    statValue: ['mt-2 block text-3xl'],
-    statValueWpm: ['text-3xl font-mono tabular-nums leading-none'],
-    wpmUnit: ['text-base text-muted leading-none'],
+    statsGrid: [
+      "grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5",
+    ],
+    statCard: [
+      "rounded-2xl border border-slate-900/8 bg-white/75 px-3 py-2.5",
+    ],
+    statLabel: [
+      "block text-[10px] font-bold uppercase tracking-[0.18em] text-muted",
+    ],
+    statValue: [
+      "mt-1 block font-mono text-2xl font-semibold tabular-nums leading-none text-ink",
+    ],
+    speedRow: ["mt-1 inline-flex items-baseline gap-1.5"],
+    wpmUnit: ["text-xs font-semibold text-muted"],
   },
 });
 
-const { statsGrid, statCard, statLabel, statValue, statValueWpm, wpmUnit } = styles();
+const { statsGrid, statCard, statLabel, statValue, speedRow, wpmUnit } = styles();
 </script>

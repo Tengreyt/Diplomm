@@ -1,4 +1,6 @@
 import { authStorageKey } from "~/constants/auth";
+import { pacePresets, type PacePresetId } from "~/constants/trainer";
+import { countNewMistakes } from "~/utils/typingMetrics";
 import type {
   AttemptResponse,
   DifficultyLevel,
@@ -20,8 +22,10 @@ export const useTrainer = () => {
   const lessonText = useState("trainer-lesson-text", () => waitingLessonText);
   const lessonLevel = useState("trainer-lesson-level", () => "waiting");
   const selectedDifficulty = useState<DifficultyLevel>("trainer-difficulty", () => "adaptive");
+  const selectedPace = useState<PacePresetId>("trainer-pace", () => "30s");
   const attemptId = useState("trainer-attempt-id", () => "");
   const typedText = useState("trainer-typed-text", () => "");
+  const totalErrors = useState("trainer-total-errors", () => 0);
   const startedAt = useState<number | null>("trainer-started-at", () => null);
   const elapsedSeconds = useState("trainer-elapsed-seconds", () => 0);
   const isResultSaved = useState("trainer-result-saved", () => false);
@@ -62,11 +66,9 @@ export const useTrainer = () => {
     const expected = lessonText.value;
     const actual = typedText.value;
     let correctChars = 0;
-    let errors = 0;
 
     for (let index = 0; index < actual.length; index += 1) {
       if (actual[index] === expected[index]) correctChars += 1;
-      else errors += 1;
     }
 
     const accuracy = actual.length ? Math.round((correctChars / actual.length) * 100) : 100;
@@ -76,7 +78,7 @@ export const useTrainer = () => {
       correctChars,
       accuracy,
       totalChars: expected.length,
-      errors,
+      errors: totalErrors.value,
       wpm: minutes > 0 ? Math.round(correctChars / 5 / minutes) : 0,
       seconds: elapsedSeconds.value
     };
@@ -87,6 +89,7 @@ export const useTrainer = () => {
   const resetAttemptState = () => {
     stopTimer();
     typedText.value = "";
+    totalErrors.value = 0;
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
@@ -136,8 +139,34 @@ export const useTrainer = () => {
     }
   };
 
+  const syncPaceForDifficulty = (difficulty: DifficultyLevel) => {
+    if (difficulty === "intermediate") {
+      selectedPace.value = "1m";
+      return;
+    }
+
+    if (difficulty === "advanced") {
+      selectedPace.value = "2m";
+      return;
+    }
+
+    if (difficulty === "beginner" && !["15s", "30s"].includes(selectedPace.value)) {
+      selectedPace.value = "30s";
+    }
+  };
+
   const selectDifficulty = async (difficulty: DifficultyLevel) => {
     selectedDifficulty.value = difficulty;
+    syncPaceForDifficulty(difficulty);
+    await fetchLesson();
+  };
+
+  const selectPace = async (pace: PacePresetId) => {
+    const preset = pacePresets.find((item) => item.id === pace);
+    if (!preset) return;
+
+    selectedPace.value = pace;
+    selectedDifficulty.value = preset.difficulty;
     await fetchLesson();
   };
 
@@ -170,7 +199,8 @@ export const useTrainer = () => {
       headers: { Authorization: `Bearer ${token}` },
       body: {
         attemptId: attemptId.value,
-        typedText: typedText.value
+        typedText: typedText.value,
+        totalErrors: totalErrors.value
       }
     });
 
@@ -195,6 +225,16 @@ export const useTrainer = () => {
   };
 
   const updateTypedText = async (value: string) => {
+    const previousText = typedText.value;
+
+    if (value.length > previousText.length) {
+      totalErrors.value += countNewMistakes({
+        previousText,
+        nextText: value,
+        lessonText: lessonText.value
+      });
+    }
+
     if (value.length > 0 && !startedAt.value) {
       startTimer();
       void startServerAttempt().catch(() => undefined);
@@ -218,6 +258,7 @@ export const useTrainer = () => {
     lessonLevel.value = "waiting";
     attemptId.value = "";
     typedText.value = "";
+    totalErrors.value = 0;
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
@@ -234,12 +275,14 @@ export const useTrainer = () => {
     lessonText,
     lessonLevel,
     selectedDifficulty,
+    selectedPace,
     typedText,
     stats,
     aiCoach,
     startCoachLesson,
     fetchLesson,
     selectDifficulty,
+    selectPace,
     saveResult,
     resultMessage,
     updateTypedText,
