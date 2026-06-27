@@ -11,6 +11,18 @@
         <RotateCcw :class="icon()" aria-hidden="true" />
       </button>
 
+      <button
+        type="button"
+        :class="iconButton({ active: isKeyboardSoundEnabled })"
+        :aria-label="soundButtonLabel"
+        :aria-pressed="isKeyboardSoundEnabled"
+        :title="soundButtonLabel"
+        @click="toggleKeyboardSound"
+      >
+        <Volume2 v-if="isKeyboardSoundEnabled" :class="icon()" aria-hidden="true" />
+        <VolumeX v-else :class="icon()" aria-hidden="true" />
+      </button>
+
       <div :class="divider()" aria-hidden="true" />
 
       <div :class="group()" role="group" aria-label="Сложность">
@@ -52,8 +64,9 @@
 </template>
 
 <script setup lang="ts">
-import { RotateCcw } from "@lucide/vue";
+import { RotateCcw, Volume2, VolumeX } from "@lucide/vue";
 import { tv } from "tailwind-variants";
+import { computed } from "vue";
 import { difficultyOptions, pacePresets, type PacePresetId } from "~/constants/trainer";
 import type { DifficultyLevel } from "~/types/trainer";
 
@@ -68,6 +81,11 @@ const emit = defineEmits<{
   "update:pace": [value: PacePresetId];
   refreshLesson: [];
 }>();
+
+const { isKeyboardSoundEnabled, toggleKeyboardSound } = useKeyboardSound();
+const soundButtonLabel = computed(() => isKeyboardSoundEnabled.value
+  ? "Выключить звуки клавиатуры"
+  : "Включить звуки клавиатуры");
 
 const styles = tv({
   slots: {
@@ -94,6 +112,7 @@ const styles = tv({
   variants: {
     active: {
       true: {
+        iconButton: "border-clan-teal/40 bg-clan-teal/12 text-clan-teal",
         chip: "bg-clan-teal/12 text-clan-teal",
       },
       false: {},

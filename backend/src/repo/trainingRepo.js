@@ -36,6 +36,23 @@ function normalizeResult(row) {
   };
 }
 
+function normalizeResultDetails(row) {
+  const result = normalizeResult(row);
+  if (!result) return null;
+
+  return {
+    ...result,
+    lessonText: row.lesson_text,
+    startedAt: row.started_at instanceof Date ? row.started_at.toISOString() : row.started_at,
+    completedAt: row.completed_at instanceof Date ? row.completed_at.toISOString() : row.completed_at
+  };
+}
+
+function normalizeResultSummary(row) {
+  const { analysis: _analysis, ...result } = normalizeResult(row);
+  return result;
+}
+
 export async function createAttempt({ userId, lessonId, lessonText, difficulty, source }) {
   const { rows } = await pool.query(
     `
@@ -44,6 +61,21 @@ export async function createAttempt({ userId, lessonId, lessonText, difficulty, 
       RETURNING *
     `,
     [userId, lessonId, lessonText, difficulty, source]
+  );
+
+  return normalizeAttempt(rows[0]);
+}
+
+export async function findLatestAttempt(userId) {
+  const { rows } = await pool.query(
+    `
+      SELECT *
+      FROM training_attempts
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
+    [userId]
   );
 
   return normalizeAttempt(rows[0]);
@@ -139,6 +171,77 @@ export async function listUserResults(userId, limit = 100) {
   return rows.map(normalizeResult);
 }
 
+export async function getUserKeyboardHeatmap(userId) {
+  const { rows } = await pool.query(
+    `
+      SELECT
+        LOWER(entry->>'value') AS key,
+        SUM(GREATEST(0, COALESCE((entry->>'count')::integer, 0)))::integer AS errors
+      FROM training_results result
+      JOIN users user_account ON user_account.id = result.user_id
+      CROSS JOIN LATERAL jsonb_array_elements(
+        COALESCE(result.analysis->'missedChars', '[]'::jsonb)
+      ) AS entry
+      WHERE result.user_id = $1
+        AND (
+          user_account.keyboard_heatmap_reset_at IS NULL
+          OR result.created_at > user_account.keyboard_heatmap_reset_at
+        )
+        AND CHAR_LENGTH(entry->>'value') = 1
+      GROUP BY LOWER(entry->>'value')
+    `,
+    [userId]
+  );
+
+  return Object.fromEntries(
+    rows
+      .filter((row) => row.key && Number(row.errors) > 0)
+      .map((row) => [row.key, Number(row.errors)])
+  );
+}
+
+export async function listUserResultsPage(userId, { limit = 20, cursor = null } = {}) {
+  const safeLimit = Math.max(1, Math.min(50, Number(limit) || 20));
+  const values = [userId, safeLimit + 1];
+  let cursorClause = '';
+
+  if (cursor?.createdAt && cursor?.id) {
+    values.push(cursor.createdAt, cursor.id);
+    cursorClause = 'AND (created_at, id) < ($3::timestamptz, $4::text)';
+  }
+
+  const { rows } = await pool.query(
+    `
+      SELECT *
+      FROM training_results
+      WHERE user_id = $1
+      ${cursorClause}
+      ORDER BY created_at DESC, id DESC
+      LIMIT $2
+    `,
+    values
+  );
+
+  const hasMore = rows.length > safeLimit;
+  const items = rows.slice(0, safeLimit).map(normalizeResultSummary);
+  return { items, hasMore };
+}
+
+export async function findUserResultDetails(userId, resultId) {
+  const { rows } = await pool.query(
+    `
+      SELECT result.*, attempt.lesson_text, attempt.started_at, attempt.completed_at
+      FROM training_results result
+      JOIN training_attempts attempt ON attempt.id = result.attempt_id
+      WHERE result.id = $1 AND result.user_id = $2
+      LIMIT 1
+    `,
+    [resultId, userId]
+  );
+
+  return normalizeResultDetails(rows[0]);
+}
+
 export async function deleteStaleAttempts() {
   await pool.query(`
     DELETE FROM training_attempts
@@ -149,10 +252,14 @@ export async function deleteStaleAttempts() {
 
 export default {
   createAttempt,
+  findLatestAttempt,
   startAttempt,
   findAttemptForUpdate,
   finishAttemptWithClient,
   createResultWithClient,
   listUserResults,
+  getUserKeyboardHeatmap,
+  listUserResultsPage,
+  findUserResultDetails,
   deleteStaleAttempts
 };

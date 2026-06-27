@@ -19,7 +19,12 @@ export function registerAttemptRoutes({ app, getSession }) {
 
       const requestedDifficulty = String(request.body?.difficulty ?? 'beginner');
       const coachText = normalizeCoachText(request.body?.targetText);
-      const recentResults = await trainingRepo.listUserResults(session.userId, 10);
+      const [recentResults, latestAttempt, keyboardHeatmap] = await Promise.all([
+        trainingRepo.listUserResults(session.userId, 50),
+        trainingRepo.findLatestAttempt(session.userId),
+        trainingRepo.getUserKeyboardHeatmap(session.userId)
+      ]);
+      const excludedTexts = latestAttempt ? [latestAttempt.lessonText] : [];
       let lesson;
 
       if (coachText) {
@@ -34,10 +39,10 @@ export function registerAttemptRoutes({ app, getSession }) {
           source: 'coach'
         };
       } else if (requestedDifficulty === 'adaptive') {
-        lesson = buildAdaptiveLesson(recentResults);
+        lesson = buildAdaptiveLesson(recentResults, { excludedTexts });
       } else {
         lesson = {
-          ...getRandomLesson(requestedDifficulty),
+          ...getRandomLesson(requestedDifficulty, excludedTexts),
           source: 'catalog'
         };
       }
@@ -58,7 +63,8 @@ export function registerAttemptRoutes({ app, getSession }) {
           levelLabel: lesson.levelLabel,
           text: lesson.text,
           source: lesson.source
-        }
+        },
+        keyboardHeatmap
       });
     } catch (error) {
       next(error);

@@ -175,7 +175,7 @@ const formattedTime = computed(() => {
 const styles = tv({
   slots: {
     resultRoot: [
-      "flex flex-1 flex-col rounded-2xl border border-slate-900/8 bg-white/70 p-5",
+      "profile-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-slate-900/8 bg-white/70 p-5 pr-4 md:pr-5",
     ],
 
     header: ["flex items-center justify-between gap-6"],

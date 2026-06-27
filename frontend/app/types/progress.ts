@@ -15,6 +15,27 @@ export type TrainingResult = {
   createdAt: string;
 };
 
+export type TrainingResultDetails = TrainingResult & {
+  lessonText: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  analysis: {
+    focusChars?: string[];
+    missedChars?: Array<{ value: string; count: number }>;
+    typedInstead?: Array<{ value: string; count: number }>;
+    pairs?: Array<{ value: string; count: number }>;
+  };
+};
+
+export type TrainingHistoryPage = {
+  items: TrainingResult[];
+  nextCursor: string | null;
+};
+
+export type TrainingResultDetailsResponse = {
+  result: TrainingResultDetails;
+};
+
 export type Achievement = {
   id: string;
   title: string;

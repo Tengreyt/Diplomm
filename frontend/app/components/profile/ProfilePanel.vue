@@ -49,6 +49,7 @@
         :is-loading="isProgressLoading"
         :error-message="progressError"
         @back="viewMode = 'profile'"
+        @open-history="emit('openHistory')"
       />
 
       <ProfileSettings
@@ -74,6 +75,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   logout: [];
+  openHistory: [];
 }>();
 
 const viewMode = ref<"profile" | "clan" | "clanRating" | "aiCoach" | "progress" | "settings">("profile");
@@ -254,11 +256,11 @@ watch(
 const styles = tv({
   slots: {
     root: [
-      "glass-panel relative h-[calc(100svh-1.25rem)] min-h-[620px] overflow-hidden rounded-panel transition-[border-color,box-shadow] duration-700 ease-out",
+      "glass-panel relative h-[calc(100svh-1.25rem)] overflow-hidden rounded-panel transition-[border-color,box-shadow] duration-700 ease-out",
     ],
     clanAura: ["pointer-events-none absolute inset-0 transition-opacity duration-700 ease-out"],
     content: [
-      "profile-scrollbar relative z-10 mr-2 h-full overflow-y-auto px-6 py-6 pr-4 md:px-7 md:py-7 md:pr-5",
+      "profile-scrollbar relative z-10 h-full overflow-y-auto px-6 py-6 md:px-7 md:py-7",
     ],
   },
 });

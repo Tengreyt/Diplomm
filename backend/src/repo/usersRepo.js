@@ -13,6 +13,9 @@ function normalizeUser(row) {
     emoji: row.emoji,
     avatarUrl: row.avatar_url,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    keyboardHeatmapResetAt: row.keyboard_heatmap_reset_at instanceof Date
+      ? row.keyboard_heatmap_reset_at.toISOString()
+      : row.keyboard_heatmap_reset_at,
     stats: {
       testsCompleted: Number(row.tests_completed ?? 0),
       bestAccuracy: Number(row.best_accuracy ?? 0),
@@ -102,6 +105,15 @@ export async function createUser(user) {
 
 export async function updatePasswordHash(userId, passwordHash) {
   await pool.query('UPDATE users SET password_hash = $2 WHERE id = $1', [userId, passwordHash]);
+}
+
+export async function resetKeyboardHeatmap(userId) {
+  const { rows } = await pool.query(
+    'UPDATE users SET keyboard_heatmap_reset_at = NOW() WHERE id = $1 RETURNING keyboard_heatmap_reset_at',
+    [userId]
+  );
+  const value = rows[0]?.keyboard_heatmap_reset_at;
+  return value instanceof Date ? value.toISOString() : value ?? null;
 }
 
 export async function updateProfile(userId, { nickname, avatarUrl, passwordHash = null }) {

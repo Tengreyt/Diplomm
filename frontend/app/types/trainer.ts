@@ -14,6 +14,7 @@ export type LessonResponse = {
 export type AttemptResponse = {
   attemptId: string;
   lesson: LessonResponse;
+  keyboardHeatmap: Record<string, number>;
 };
 
 export type TrainerStats = {
