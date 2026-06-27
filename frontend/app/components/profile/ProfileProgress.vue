@@ -163,9 +163,20 @@
         </section>
 
         <section :class="sectionCard()">
-          <span :class="sectionLabel()">Последние тренировки</span>
+          <div :class="historyHeader()">
+            <span :class="sectionLabel()">Последние тренировки</span>
+            <button
+              v-if="progress.summary.total > 10"
+              type="button"
+              :class="allHistoryButton()"
+              @click="emit('openHistory')"
+            >
+              Вся история
+              <ArrowRight :class="buttonIcon()" aria-hidden="true" />
+            </button>
+          </div>
           <div :class="historyList()">
-            <div v-for="item in progress.history.slice(0, 8)" :key="item.id" :class="historyRow()">
+            <div v-for="item in progress.history.slice(0, 10)" :key="item.id" :class="historyRow()">
               <div>
                 <strong>{{ item.wpm }} WPM · {{ item.accuracy }}%</strong>
                 <p>{{ formatResultDate(item.createdAt) }}</p>
@@ -181,6 +192,7 @@
 
 <script setup lang="ts">
 import { tv } from "tailwind-variants";
+import { ArrowRight } from "@lucide/vue";
 import BackButton from "~/components/ui/BackButton.vue";
 import { difficultyLabels } from "~/constants/trainer";
 import type { ProgressResponse, TrainingResult } from "~/types/progress";
@@ -191,7 +203,7 @@ const props = defineProps<{
   errorMessage: string;
 }>();
 
-const emit = defineEmits<{ back: [] }>();
+const emit = defineEmits<{ back: []; openHistory: [] }>();
 
 const chartResults = computed(() => [...(props.progress?.history ?? [])].slice(0, 12).reverse());
 const hoveredSeries = ref<"speed" | "accuracy" | null>(null);
@@ -313,6 +325,12 @@ const styles = tv({
     ],
     achievementMark: ["flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 font-bold"],
     historyList: ["mt-3 grid gap-2"],
+    historyHeader: ["flex items-center justify-between gap-3"],
+    allHistoryButton: [
+      "inline-flex items-center gap-1.5 text-xs font-bold text-clan-teal transition hover:text-accent-deep",
+      "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clan-teal"
+    ],
+    buttonIcon: ["h-3.5 w-3.5"],
     historyRow: [
       "flex items-center justify-between gap-3 rounded-xl bg-white/40 p-3",
       "[&_strong]:text-sm [&_strong]:text-ink [&_p]:mt-1 [&_p]:text-xs [&_p]:text-muted",
@@ -333,6 +351,7 @@ const styles = tv({
 const {
   topbar, kicker, title, body, stateCard, summaryGrid, metricCard, chartCard, chartHeader,
   sectionLabel, sectionTitle, historyCount, chart, legend, sectionCard, achievementList,
-  achievementCard, achievementMark, historyList, historyRow, difficultyBadge
+  achievementCard, achievementMark, historyList, historyHeader, allHistoryButton, buttonIcon,
+  historyRow, difficultyBadge
 } = styles();
 </script>

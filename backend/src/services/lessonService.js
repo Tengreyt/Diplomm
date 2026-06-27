@@ -21,10 +21,15 @@ export function isDifficulty(value) {
   return difficultyLevels.includes(value);
 }
 
-export function getRandomLesson(level = 'beginner') {
+function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+export function getRandomLesson(level = 'beginner', excludedTexts = []) {
   const normalizedLevel = isDifficulty(level) ? level : 'beginner';
   const pool = lessons.filter((lesson) => lesson.level === normalizedLevel);
-  return pool[Math.floor(Math.random() * pool.length)];
+  const available = pool.filter((lesson) => !excludedTexts.includes(lesson.text));
+  return pickRandom(available.length > 0 ? available : pool);
 }
 
 export function getRecommendedDifficulty(results = []) {
@@ -48,25 +53,32 @@ export function getRecommendedDifficulty(results = []) {
   return 'beginner';
 }
 
-export function buildAdaptiveLesson(results = []) {
+export function buildAdaptiveLesson(results = [], { excludedTexts = [] } = {}) {
   const difficulty = getRecommendedDifficulty(results);
-  const focusChars = results
+  const focusChars = [...new Set(results
     .flatMap((result) => result.analysis?.focusChars ?? [])
-    .filter(Boolean)
+    .filter(Boolean))]
     .slice(0, 4);
 
   if (focusChars.length > 0) {
+    const variants = Array.from({ length: 8 }, (_, variant) => ({
+      id: `adaptive-${focusChars.join('-')}-${variant + 1}`,
+      text: buildPracticeText(focusChars, variant)
+    }));
+    const available = variants.filter((variant) => !excludedTexts.includes(variant.text));
+    const selected = pickRandom(available.length > 0 ? available : variants);
+
     return {
-      id: `adaptive-${focusChars.join('-')}`,
+      id: selected.id,
       level: difficulty,
       levelLabel: 'Адаптивный',
-      text: buildPracticeText(focusChars),
+      text: selected.text,
       source: 'adaptive'
     };
   }
 
   return {
-    ...getRandomLesson(difficulty),
+    ...getRandomLesson(difficulty, excludedTexts),
     levelLabel: 'Адаптивный',
     source: 'adaptive'
   };

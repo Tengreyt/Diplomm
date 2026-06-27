@@ -26,6 +26,10 @@ export const useTrainer = () => {
   const attemptId = useState("trainer-attempt-id", () => "");
   const typedText = useState("trainer-typed-text", () => "");
   const totalErrors = useState("trainer-total-errors", () => 0);
+  const historicalKeyErrors = useState<Record<string, number>>("trainer-key-errors-history", () => ({}));
+  const currentKeyErrors = useState<Record<string, number>>("trainer-key-errors-current", () => ({}));
+  const isHeatmapResetting = useState("trainer-heatmap-resetting", () => false);
+  const heatmapResetError = useState("trainer-heatmap-reset-error", () => "");
   const startedAt = useState<number | null>("trainer-started-at", () => null);
   const elapsedSeconds = useState("trainer-elapsed-seconds", () => 0);
   const isResultSaved = useState("trainer-result-saved", () => false);
@@ -85,16 +89,25 @@ export const useTrainer = () => {
   });
 
   const stats = computed(() => savedStats.value ?? liveStats.value);
+  const keyboardHeatmap = computed<Record<string, number>>(() => {
+    const combined = { ...historicalKeyErrors.value };
+    for (const [key, count] of Object.entries(currentKeyErrors.value)) {
+      combined[key] = (combined[key] ?? 0) + count;
+    }
+    return combined;
+  });
 
   const resetAttemptState = () => {
     stopTimer();
     typedText.value = "";
     totalErrors.value = 0;
+    currentKeyErrors.value = {};
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
     savedStats.value = null;
     resultMessage.value = "";
+    heatmapResetError.value = "";
     attemptStartPromise = null;
   };
 
@@ -115,11 +128,13 @@ export const useTrainer = () => {
     attemptId.value = response.attemptId;
     lessonText.value = response.lesson.text;
     lessonLevel.value = response.lesson.levelLabel;
+    historicalKeyErrors.value = response.keyboardHeatmap ?? {};
     resetAttemptState();
   };
 
   const fetchLesson = async () => {
     aiCoach.value = null;
+    heatmapResetError.value = "";
     try {
       await createAttempt();
     } catch {
@@ -168,6 +183,31 @@ export const useTrainer = () => {
     selectedPace.value = pace;
     selectedDifficulty.value = preset.difficulty;
     await fetchLesson();
+  };
+
+  const resetKeyboardHeatmap = async () => {
+    if (!import.meta.client || isHeatmapResetting.value) return;
+    const token = localStorage.getItem(authStorageKey);
+    if (!token) return;
+
+    const previousHistoricalErrors = historicalKeyErrors.value;
+    const previousCurrentErrors = currentKeyErrors.value;
+    heatmapResetError.value = "";
+    historicalKeyErrors.value = {};
+    currentKeyErrors.value = {};
+    isHeatmapResetting.value = true;
+    try {
+      await $fetch(`${config.public.apiBase}/progress/keyboard-heatmap/reset`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      historicalKeyErrors.value = previousHistoricalErrors;
+      currentKeyErrors.value = previousCurrentErrors;
+      heatmapResetError.value = "Не удалось сбросить ошибки. Попробуй ещё раз.";
+    } finally {
+      isHeatmapResetting.value = false;
+    }
   };
 
   const startServerAttempt = () => {
@@ -233,6 +273,15 @@ export const useTrainer = () => {
         nextText: value,
         lessonText: lessonText.value
       });
+
+      const nextErrors = { ...currentKeyErrors.value };
+      for (let index = previousText.length; index < value.length; index += 1) {
+        const expected = lessonText.value[index]?.toLowerCase();
+        if (expected?.trim() && value[index] !== lessonText.value[index]) {
+          nextErrors[expected] = (nextErrors[expected] ?? 0) + 1;
+        }
+      }
+      currentKeyErrors.value = nextErrors;
     }
 
     if (value.length > 0 && !startedAt.value) {
@@ -259,6 +308,8 @@ export const useTrainer = () => {
     attemptId.value = "";
     typedText.value = "";
     totalErrors.value = 0;
+    historicalKeyErrors.value = {};
+    currentKeyErrors.value = {};
     startedAt.value = null;
     elapsedSeconds.value = 0;
     isResultSaved.value = false;
@@ -277,12 +328,16 @@ export const useTrainer = () => {
     selectedDifficulty,
     selectedPace,
     typedText,
+    keyboardHeatmap,
+    isHeatmapResetting,
+    heatmapResetError,
     stats,
     aiCoach,
     startCoachLesson,
     fetchLesson,
     selectDifficulty,
     selectPace,
+    resetKeyboardHeatmap,
     saveResult,
     resultMessage,
     updateTypedText,

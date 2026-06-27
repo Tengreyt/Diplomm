@@ -23,6 +23,8 @@ export async function migrateDatabase() {
     )
   `);
 
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS keyboard_heatmap_reset_at TIMESTAMPTZ');
+
   await migrateUserIdsToText();
 
   await pool.query(`

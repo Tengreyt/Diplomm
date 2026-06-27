@@ -8,7 +8,29 @@ const fallbackPracticeWords = [
   'точность',
   'скорость',
   'внимание',
-  'ошибка'
+  'ошибка',
+  'клавиша',
+  'строка',
+  'буква',
+  'слово',
+  'фраза',
+  'темп',
+  'пауза',
+  'фокус',
+  'навык',
+  'память',
+  'движение',
+  'практика',
+  'ровно',
+  'мягко',
+  'быстро',
+  'спокойно',
+  'печать',
+  'палец',
+  'экран',
+  'задача',
+  'урок',
+  'прогресс'
 ];
 
 function countMapEntries(map) {
@@ -62,20 +84,38 @@ export function analyzeTypingAttempt({ lessonText = '', typedText = '', result =
   };
 }
 
-export function buildPracticeText(focusChars = []) {
-  const normalizedFocusChars = focusChars.map((char) => String(char).toLowerCase());
+export function buildPracticeText(focusChars = [], variant = 0) {
+  const normalizedFocusChars = [...new Set(
+    focusChars.map((char) => String(char).toLowerCase()).filter(Boolean)
+  )];
   const focusedWords = fallbackPracticeWords.filter((word) => {
     return normalizedFocusChars.some((char) => word.includes(char));
   });
+  const wordPool = [...new Set([...focusedWords, ...fallbackPracticeWords])];
+  const offset = Math.abs(Number(variant) || 0) % wordPool.length;
+  const rotatedWords = [...wordPool.slice(offset), ...wordPool.slice(0, offset)];
+  const words = rotatedWords.slice(0, 10);
 
-  const words = focusedWords.length > 0
-    ? [...new Set([...focusedWords, ...fallbackPracticeWords])].slice(0, 6)
-    : fallbackPracticeWords.slice(0, 6);
+  return [...words, ...words.slice(0, 4)].join(' ');
+}
 
-  return [...words, ...words.slice(0, 3)].join(' ');
+export function buildKeyboardHeatmap(results = []) {
+  const heatmap = {};
+
+  for (const result of results) {
+    for (const entry of result.analysis?.missedChars ?? []) {
+      const key = String(entry.value ?? '').toLowerCase();
+      const count = Math.max(0, Number(entry.count) || 0);
+      if (!key || key.length !== 1 || count === 0) continue;
+      heatmap[key] = (heatmap[key] ?? 0) + count;
+    }
+  }
+
+  return heatmap;
 }
 
 export default {
   analyzeTypingAttempt,
-  buildPracticeText
+  buildPracticeText,
+  buildKeyboardHeatmap
 };

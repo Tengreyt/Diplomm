@@ -4,10 +4,14 @@
     role="textbox"
     aria-label="Поле тренировки печати"
     :aria-multiline="true"
-    :class="typingCard()"
+    :class="typingCard({
+      compact: lessonText.length > 120,
+      guideExpanded: isKeyboardGuideExpanded
+    })"
     tabindex="0"
     @click="focus"
     @keydown="onKeydown"
+    @wheel.passive="blurOnScroll"
     @paste="onPaste"
   >
     <span v-if="typedText.length === 0" :class="startCursorWrap()">
@@ -62,6 +66,7 @@ type LessonToken = {
 const props = defineProps<{
   lessonText: string;
   typedText: string;
+  isKeyboardGuideExpanded: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -69,6 +74,7 @@ const emit = defineEmits<{
 }>();
 
 const root = ref<HTMLElement | null>(null);
+const { playKeySound } = useKeyboardSound();
 
 const lessonTokens = computed<LessonToken[]>(() => {
   const words = props.lessonText.split(" ");
@@ -103,6 +109,7 @@ const lessonTokens = computed<LessonToken[]>(() => {
 });
 
 const focus = () => root.value?.focus();
+const blurOnScroll = () => root.value?.blur();
 
 const updateTypedText = (value: string) => {
   emit("update:typedText", value.slice(0, props.lessonText.length));
@@ -113,6 +120,7 @@ const onKeydown = (event: KeyboardEvent) => {
 
   if (event.key === "Backspace") {
     event.preventDefault();
+    if (props.typedText.length > 0) playKeySound(event.code || "Backspace");
     updateTypedText(props.typedText.slice(0, -1));
     return;
   }
@@ -125,6 +133,7 @@ const onKeydown = (event: KeyboardEvent) => {
   if (event.key.length !== 1 || props.typedText.length >= props.lessonText.length) return;
 
   event.preventDefault();
+  playKeySound(event.code || event.key);
   updateTypedText(`${props.typedText}${event.key}`);
 };
 
@@ -150,7 +159,7 @@ const getCharacterText = (index: number, expectedCharacter: string) => {
 const styles = tv({
   slots: {
     typingCard: [
-      "glass-input min-h-[220px] flex-1 rounded-2xl p-5 text-xl font-semibold leading-[1.9] text-slate-400 antialiased outline-none transition",
+      "glass-input shrink-0 overflow-hidden rounded-2xl p-5 text-xl font-semibold leading-[1.75] text-slate-400 antialiased outline-none transition-[height,border-color,background-color,box-shadow] duration-300 ease-out",
       "focus:border-accent-deep focus:bg-white/60 focus:ring-4 focus:ring-accent-deep/15",
       "md:p-7 md:text-2xl",
     ],
@@ -162,6 +171,14 @@ const styles = tv({
     ],
   },
   variants: {
+    guideExpanded: {
+      true: { typingCard: "h-[200px] md:h-[230px]" },
+      false: { typingCard: "h-[380px] md:h-[430px]" },
+    },
+    compact: {
+      true: { typingCard: "text-lg leading-[1.55] md:text-xl" },
+      false: {},
+    },
     state: {
       pending: { character: "text-slate-400" },
       current: { character: "text-slate-400" },
